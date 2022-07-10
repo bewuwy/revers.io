@@ -1,0 +1,10 @@
+<h3>join an open game</h3>
+
+<div *ngFor="let gameId of gamesList" id="gamesList">
+    <button (click)="joinGame(gameId)">join game {{ gameId }}</button>
+</div>
+<!-- <a routerLink="/play/game134">game 134</a> -->
+
+<h3>create a new game</h3>
+
+<button (click)="createGame()" onclick="this.disabled=true;">new game</button>

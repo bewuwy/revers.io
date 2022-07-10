@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "reversio-bewu": {
+      "hosting": {
+        "revers_io_angular": [
+          "reversio-bewu"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "reversio-bewu"
+  }
+}

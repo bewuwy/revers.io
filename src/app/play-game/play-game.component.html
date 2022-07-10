@@ -1,0 +1,22 @@
+<h3>game</h3>
+
+<p>game id: {{ gameId }}</p>
+
+<div *ngIf="data; then dataExists else dataNotExists"></div>
+
+<ng-template #dataExists>
+    <h3>data</h3>
+
+    <p>clicks: {{ data.clicks }}</p>
+    <p>playing with {{ data.players }}</p>
+    <p>created: {{ data.created }}</p>
+
+    <div *ngIf="data.completed; then gameCompleted else gameNotCompleted"></div>
+
+    <ng-template #gameCompleted><p>game completed</p></ng-template>
+    <ng-template #gameNotCompleted><p>game in progress</p></ng-template>
+
+    <button (click)="click()">click</button>
+
+</ng-template>
+<ng-template #dataNotExists><p>loading data...</p></ng-template>
