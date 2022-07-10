@@ -11,6 +11,8 @@
     <p>playing with {{ data.players }}</p>
     <p>created: {{ data.created }}</p>
 
+    <p>winner: {{ data.winner }} <b *ngIf="won === true">(you!)</b></p>
+
     <div *ngIf="data.completed; then gameCompleted else gameNotCompleted"></div>
 
     <ng-template #gameCompleted><p>game completed</p></ng-template>

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
-import { Firestore, collection, doc, setDoc, getDocs, query, where, orderBy, limit } from "@angular/fire/firestore"; 
+import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit, updateDoc } from "@angular/fire/firestore"; 
 import { Router } from '@angular/router';
+import { Auth } from '@angular/fire/auth';
 
 
 @Component({
@@ -13,10 +14,15 @@ export class JoinGameComponent implements OnInit {
 
   gamesList: string[] = [];
 
-  constructor(private db: Firestore, private router: Router) { }
+  constructor(private db: Firestore, private auth: Auth, private router: Router) { }
 
   // create a new game
   createGame() {
+    const userId = this.auth.currentUser?.uid;
+    if (!userId) {
+      return;
+    }
+
     const id = uuidv4();
     console.log("create game", id);
 
@@ -25,9 +31,10 @@ export class JoinGameComponent implements OnInit {
 
     setDoc(gameDoc, {
       clicks: 0,
-      players: [],
+      players: [userId],
       completed: false,
-      created: new Date()
+      created: new Date(),
+      winner: null
     }).then(() => {
       console.log("created game", id);
       this.router.navigate(["/play", id]);
@@ -39,8 +46,33 @@ export class JoinGameComponent implements OnInit {
 
   // join a game
   joinGame(gameId: string) {
-    console.log("join game", gameId);
-    this.router.navigate(["/play", gameId]);
+    const userId = this.auth.currentUser?.uid;
+    if (!userId) {
+      return;
+    }
+
+    // add player to firestore    
+    const gamesCollection = collection(this.db, 'game');
+    const gameDoc = doc(gamesCollection, gameId);
+
+    getDoc(gameDoc).then((doc) => {
+      const data = doc.data()
+
+      if (data && data["players"].indexOf(userId) === -1) {
+        data["players"].push(userId);
+
+        setDoc(gameDoc, data).then(() => {
+          console.log("joined game", gameId);
+        });
+      }
+      else {
+        console.log("already joined game", gameId);
+      }
+
+      // navigate to play game
+      this.router.navigate(["/play", gameId]);
+    });
+
   }
 
   ngOnInit(): void {
