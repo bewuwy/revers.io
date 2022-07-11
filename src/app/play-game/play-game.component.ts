@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { Firestore, collection, doc, onSnapshot, setDoc } from '@angular/fire/firestore';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 // import { Game } from '../game';
 
@@ -15,10 +15,16 @@ export class PlayGameComponent implements OnInit {
   data: any;
   won: boolean | null = null;
 
-  constructor(private db: Firestore, private auth: Auth, private route: ActivatedRoute) {  }
+  constructor(private db: Firestore, private auth: Auth, private route: ActivatedRoute, private router: Router) {  }
 
   click() {
     if (this.data.completed) {
+      console.log("game already completed");
+      return;
+    }
+
+    if (this.data.players.length < 2) {
+      console.log("not enough players");
       return;
     }
 
@@ -45,6 +51,13 @@ export class PlayGameComponent implements OnInit {
     onSnapshot(gameDoc, (doc) => {
       this.data = doc.data();
       this.data.created = new Date(this.data.created.seconds * 1000);
+
+      // check if current user in game
+      if (this.data.players.indexOf(this.auth.currentUser?.uid) === -1) {
+        this.router.navigate(["/join"]).then(() => {
+          console.log("player not in game");
+        });
+      }
 
       // check if current user won
       this.won = this.data.winner === this.auth.currentUser?.uid;
