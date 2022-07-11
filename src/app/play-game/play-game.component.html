@@ -18,12 +18,17 @@
         <p>white: {{ data.score.white }} black: {{ data.score.black }}</p>
     </div>
 
-    <div id="board" #boardDiv [class.disabled]="!opponent.id">
+    <h3>board</h3>
+
+    <p *ngIf="!playerTurn">waiting for opponent's move...</p>
+    <p *ngIf="playerTurn">your turn!</p>
+
+    <div id="board" #boardDiv [class.disabled]="!opponent.id || !playerTurn">
         <div *ngIf="!opponent.id" id="curtain"><span>waiting for an opponent...</span></div>
         <div class="row" *ngFor="let item of [].constructor(boardSize.y); let i = index"
              attr.data-row="{{ i }}">
             <div class="cell" *ngFor="let item_ of [].constructor(boardSize.x); let j = index"
-                 attr.data-row="{{ i }}" attr.data-column="{{ j }}" (click)="putDisk(i, j);">
+                 attr.data-row="{{ i }}" attr.data-column="{{ j }}" (click)="putDisk(i, j, true);">
             
                 <div class="disk" *ngIf="board[i][j]"
                      [ngClass]="board[i][j]"></div>

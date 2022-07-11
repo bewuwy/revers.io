@@ -65,9 +65,6 @@ export class SignInComponent implements OnInit {
   }
 
   signIn(email: string, password: string) {
-    console.log("sign in");
-    console.log(email, password);
-
     signInWithEmailAndPassword(this.auth, email, password).then((user) => {
 
       // navigate to account page

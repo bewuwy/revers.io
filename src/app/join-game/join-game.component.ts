@@ -89,6 +89,7 @@ export class JoinGameComponent implements OnInit {
   joinGame(gameId: string) {
     const userId = this.auth.currentUser?.uid;
     if (!userId) {
+      console.log("you need to be logged in to join a game");
       return;
     }
 
