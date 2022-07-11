@@ -1,19 +1,11 @@
-<div>
-    <h3>game</h3>
-
-    <p>game id: {{ gameId }}</p>
-</div>
-
+<h3>game</h3>
 <div *ngIf="data; then dataExists else dataNotExists"></div>
 
 <ng-template #dataExists>
-    <h3>data</h3>
-
-    <p>clicks: {{ data.clicks }}</p>
-    
-    <div *ngIf="opponent; then opponentExists else opponentNotExists"></div>
+    <div *ngIf="opponent.name; then opponentExists else opponentNotExists"></div>
     <ng-template #opponentExists>
         <p title="{{ opponent.id }}">playing against {{ opponent.name }}</p>
+        <p>you are playing as <b>{{ playerColor }}</b></p>
     </ng-template>
     <ng-template #opponentNotExists>
         <p>waiting for an opponent...</p>
@@ -21,18 +13,30 @@
 
     <p>game created {{ createdDelta }} ago</p>
 
-    <!-- <div *ngIf="data.winner">
-        <p>winner: {{ data.winner }} <b *ngIf="won === true">(you!)</b></p>
-    </div> -->
+    <div id="score">
+        <h3>score</h3>
+        <p>white: {{ data.score.white }} black: {{ data.score.black }}</p>
+    </div>
+
+    <div id="board" #boardDiv [class.disabled]="!opponent.id">
+        <div *ngIf="!opponent.id" id="curtain"><span>waiting for an opponent...</span></div>
+        <div class="row" *ngFor="let item of [].constructor(boardSize.y); let i = index"
+             attr.data-row="{{ i }}">
+            <div class="cell" *ngFor="let item_ of [].constructor(boardSize.x); let j = index"
+                 attr.data-row="{{ i }}" attr.data-column="{{ j }}" (click)="putDisk(i, j);">
+            
+                <div class="disk" *ngIf="board[i][j]"
+                     [ngClass]="board[i][j]"></div>
+            </div>
+        </div>
+    </div>
 
     <div *ngIf="data.completed; then gameCompleted else gameNotCompleted"></div>
 
     <ng-template #gameCompleted>
-        <p>game completed - <b *ngIf="won === true">you won!</b><b *ngIf="won === false">you lost!</b></p>
+        <p>game completed - <b *ngIf="won === true">you won!</b><b *ngIf="won === false">you lost!</b><b *ngIf="won === null">tie!</b></p>
     </ng-template>
-    <ng-template #gameNotCompleted><p>game in progress</p></ng-template>
-
-    <button (click)="click()">click</button>
+    <ng-template #gameNotCompleted><p>game in progress...</p></ng-template>
 
 </ng-template>
 <ng-template #dataNotExists><p>loading data...</p></ng-template>

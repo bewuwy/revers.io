@@ -61,9 +61,10 @@ export class JoinGameComponent implements OnInit {
       gameDoc = doc(gamesCollection, id);
 
       setDoc(gameDoc, {
-        clicks: 0,
         players: [userId],
         playerNames: [this.auth.currentUser?.displayName],
+        moves: [],
+        score: {white: 2, black: 2},
         completed: false,
         open: open,
         created: new Date(),

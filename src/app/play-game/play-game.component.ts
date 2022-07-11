@@ -18,47 +18,99 @@ export class PlayGameComponent implements OnInit {
   createdDelta: string = "";
   won: boolean | null = null;
 
-  constructor(private db: Firestore, private auth: Auth, private route: ActivatedRoute, private router: Router) {  }
+  boardSize: { x: number, y: number } = { x: 4, y: 4 };
+  board: string[][] = [];
+  playerColor: string = "";
 
-  click() {
-    if (this.data.completed) {
-      console.log("game already completed");
+  constructor(private db: Firestore, private auth: Auth, 
+              private route: ActivatedRoute, private router: Router) {  }
+
+  putDisk(x: number, y: number,) {
+    // check if game started
+    if (!this.opponent.id) {
+      console.log("game not started");
       return;
     }
 
-    if (this.data.players.length < 2) {
-      console.log("not enough players");
+    // check if place not taken
+    if (this.board[x][y] !== "") {
+      console.log("place taken");
       return;
+    }
+
+    const color = this.playerColor;
+
+    this.board[x][y] = color;
+    this.data.moves.push({ x: x, y: y, color: color });
+
+    this.data.score[color]++;
+
+    // check if game over
+    if (this.data.moves.length >= (this.boardSize.x * this.boardSize.y - 4)) {
+      // check tie
+      if (this.data.score["black"] === this.data.score["white"]) {
+        this.won = null;
+
+        this.data.winner = "tie";
+      } else {
+
+        const winnerColor = this.data.score["black"] > this.data.score["white"] ? "black" : "white";
+        this.won = this.playerColor === winnerColor;
+        this.data.winner = this.won ? this.auth.currentUser?.uid : this.opponent.id;
+      }
+
+      this.data.completed = true;
     }
 
     const gamesCollection = collection(this.db, 'game');
     const gameDoc = doc(gamesCollection, this.gameId);
 
-    this.data.clicks += 1;
+    setDoc(gameDoc, this.data).then(() => {
+      console.log("move saved");
+    });
+  }
 
-    // finish game if more than 5 clicks
-    if (this.data.clicks > 5) {
-      this.data.completed = true;
-      this.data.winner = this.auth.currentUser?.uid;
-    }
+  startGame() {
+    const center = Math.floor(this.boardSize.x / 2);
 
-    setDoc(gameDoc, this.data);
+    this.board[center-1][center-1] = "black";
+    this.board[center-1][center] = "white";
+    this.board[center][center] = "black";
+    this.board[center][center-1] = "white";
   }
 
   ngOnInit(): void {
     this.gameId = this.route.snapshot.paramMap.get("id") || "";
+    
+    // create this.board
+    for (let i = 0; i < this.boardSize.x; i++) {
+      this.board[i] = [];
+      for (let j = 0; j < this.boardSize.y; j++) {
+        this.board[i][j] = "";
+      }
+    }
+    this.startGame();
 
     const gamesCollection = collection(this.db, 'game');
     const gameDoc = doc(gamesCollection, this.gameId);
 
     onSnapshot(gameDoc, (doc) => {
       this.data = doc.data();
+
+      // recreate moves on board
+      for (let i = 0; i < this.data.moves.length; i++) {
+        const move = this.data.moves[i];
+        this.board[move.x][move.y] = move.color;
+      }
+
       this.data.created = new Date(this.data.created.seconds * 1000);
 
       this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format
 
       this.opponent.name = this.data.playerNames.find((p:string) => p !== this.auth.currentUser?.displayName);
       this.opponent.id = this.data.players.find((p:string) => p !== this.auth.currentUser?.uid);
+
+      this.playerColor = this.data.players.indexOf(this.auth.currentUser?.uid) === 0 ? "black" : "white";
 
       // check if current user in game
       if (this.data.players.indexOf(this.auth.currentUser?.uid) === -1) {
@@ -68,10 +120,14 @@ export class PlayGameComponent implements OnInit {
       }
 
       // check if current user won
-      this.won = this.data.winner === this.auth.currentUser?.uid;
+      if (this.data.winner === "tie") {
+        this.won = null;
+      }
+      else {
+        this.won = this.data.winner === this.auth.currentUser?.uid;
+      }
 
       console.log("data: ", doc.data());
     });
   }
-
 }
