@@ -4,5 +4,13 @@
     <p>username: {{ account.displayName }}</p>
     <p>id: {{ account.uid }}</p>
     <p>email: {{ account.email }}</p>
-    <p>email verified: {{ account.emailVerified }}</p>    
+    <p>email verified: {{ account.emailVerified }}</p>
+
+    <h3>your active games</h3>
+
+    <div id="games">
+        <div *ngFor="let game of games">
+            <p><a routerLink="/play/{{ game }}">game {{ game }}</a></p>
+        </div>
+    </div>
 </div>
