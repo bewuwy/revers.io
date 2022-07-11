@@ -63,6 +63,7 @@ export class JoinGameComponent implements OnInit {
       setDoc(gameDoc, {
         clicks: 0,
         players: [userId],
+        playerNames: [this.auth.currentUser?.displayName],
         completed: false,
         open: open,
         created: new Date(),
@@ -99,6 +100,7 @@ export class JoinGameComponent implements OnInit {
 
       if (data && data["players"].indexOf(userId) === -1) {
         data["players"].push(userId);
+        data["playerNames"].push(this.auth.currentUser?.displayName);
         data["open"] = data["players"].length < 2;
 
         setDoc(gameDoc, data).then(() => {

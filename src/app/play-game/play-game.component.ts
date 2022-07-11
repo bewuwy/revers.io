@@ -13,6 +13,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class PlayGameComponent implements OnInit {
   gameId: string = "";
   data: any;
+
+  opponent: { name: string, id: string } = { name: "", id: "" };
+  createdDelta: string = "";
   won: boolean | null = null;
 
   constructor(private db: Firestore, private auth: Auth, private route: ActivatedRoute, private router: Router) {  }
@@ -51,6 +54,11 @@ export class PlayGameComponent implements OnInit {
     onSnapshot(gameDoc, (doc) => {
       this.data = doc.data();
       this.data.created = new Date(this.data.created.seconds * 1000);
+
+      this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format
+
+      this.opponent.name = this.data.playerNames.find((p:string) => p !== this.auth.currentUser?.displayName);
+      this.opponent.id = this.data.players.find((p:string) => p !== this.auth.currentUser?.uid);
 
       // check if current user in game
       if (this.data.players.indexOf(this.auth.currentUser?.uid) === -1) {

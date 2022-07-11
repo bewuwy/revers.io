@@ -1,6 +1,8 @@
-<h3>game</h3>
+<div>
+    <h3>game</h3>
 
-<p>game id: {{ gameId }}</p>
+    <p>game id: {{ gameId }}</p>
+</div>
 
 <div *ngIf="data; then dataExists else dataNotExists"></div>
 
@@ -8,14 +10,26 @@
     <h3>data</h3>
 
     <p>clicks: {{ data.clicks }}</p>
-    <p>playing with {{ data.players }}</p>
-    <p>created: {{ data.created }}</p>
+    
+    <div *ngIf="opponent; then opponentExists else opponentNotExists"></div>
+    <ng-template #opponentExists>
+        <p title="{{ opponent.id }}">playing against {{ opponent.name }}</p>
+    </ng-template>
+    <ng-template #opponentNotExists>
+        <p>waiting for an opponent...</p>
+    </ng-template>
 
-    <p>winner: {{ data.winner }} <b *ngIf="won === true">(you!)</b></p>
+    <p>game created {{ createdDelta }} ago</p>
+
+    <!-- <div *ngIf="data.winner">
+        <p>winner: {{ data.winner }} <b *ngIf="won === true">(you!)</b></p>
+    </div> -->
 
     <div *ngIf="data.completed; then gameCompleted else gameNotCompleted"></div>
 
-    <ng-template #gameCompleted><p>game completed</p></ng-template>
+    <ng-template #gameCompleted>
+        <p>game completed - <b *ngIf="won === true">you won!</b><b *ngIf="won === false">you lost!</b></p>
+    </ng-template>
     <ng-template #gameNotCompleted><p>game in progress</p></ng-template>
 
     <button (click)="click()">click</button>
