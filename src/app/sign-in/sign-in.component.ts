@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, Auth, signOut, updateProfile } from '@angular/fire/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, Auth, signOut, updateProfile } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 
 @Component({
@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./sign-in.component.css']
 })
 export class SignInComponent implements OnInit {
+  logged: boolean = false;
 
   registerForm = new FormGroup({
     username: new FormControl('', {nonNullable: true}),
@@ -21,10 +22,13 @@ export class SignInComponent implements OnInit {
     password: new FormControl('', {nonNullable: true})
   });
 
-  constructor(private auth: Auth, private router: Router) { }
+  constructor(private auth: Auth, private router: Router) { 
+    onAuthStateChanged(this.auth, (user) => {
+      this.logged = user !== null;
+    });
+   }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void { }
 
   onSubmitRegister() {
     if (this.registerForm.value.email && this.registerForm.value.password && this.registerForm.value.username) {
@@ -46,9 +50,10 @@ export class SignInComponent implements OnInit {
         console.log("updated user: ", user.user);
 
         // navigate to account page
-        this.router.navigate(['account']).then(() => {
-          location.reload();
-        });
+        this.router.navigate(['account']);
+        // .then(() => {
+        //   location.reload();
+        // });
 
       }).catch((error) => {
         console.log("error: ", error);

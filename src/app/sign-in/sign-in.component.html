@@ -1,38 +1,46 @@
-<h3>sign up</h3>
+<div *ngIf="logged; then loggedIn else notLoggedIn"></div>
 
-<form (ngSubmit)="onSubmitRegister();" [formGroup]="registerForm" >
-    <div>
-        <label for="register-username">username: </label>
-        <input id="register-username" name="username" type="text" formControlName="username">
-    </div>
+<ng-template #notLoggedIn >
+    <h3>sign in</h3>
 
-    <div>
-        <label for="register-email">e-mail: </label>
-        <input id="register-email" name="email" type="email" formControlName="email">
-    </div>
+    <form (ngSubmit)="onSubmitLogin();" [formGroup]="loginForm" >
+        <div>
+            <label for="login-email">e-mail: </label>
+            <input id="login-email" name="email" type="email" formControlName="email">
+        </div>
 
-    <div>
-        <label for="register-password">password: </label>
-        <input id="register-password" name="pass" type="password" formControlName="password">
-    </div>
+        <div>
+            <label for="login-password">password: </label>
+            <input id="login-password" name="pass" type="password" formControlName="password">
+        </div>
 
-    <input type="submit" value="sign up">
-</form>
+        <input type="submit" value="sign in">
+    </form>
 
-<h3>sign in</h3>
+    <h3>sign up</h3>
 
-<form (ngSubmit)="onSubmitLogin();" [formGroup]="loginForm" >
-    <div>
-        <label for="login-email">e-mail: </label>
-        <input id="login-email" name="email" type="email" formControlName="email">
-    </div>
+    <form (ngSubmit)="onSubmitRegister();" [formGroup]="registerForm" >
+        <div>
+            <label for="register-username">username: </label>
+            <input id="register-username" name="username" type="text" formControlName="username">
+        </div>
 
-    <div>
-        <label for="login-password">password: </label>
-        <input id="login-password" name="pass" type="password" formControlName="password">
-    </div>
+        <div>
+            <label for="register-email">e-mail: </label>
+            <input id="register-email" name="email" type="email" formControlName="email">
+        </div>
 
-    <input type="submit" value="sign in">
-</form>
+        <div>
+            <label for="register-password">password: </label>
+            <input id="register-password" name="pass" type="password" formControlName="password">
+        </div>
 
-<button (click)="onSignOut()">sign out</button>
+        <input type="submit" value="sign up">
+    </form>
+</ng-template>
+
+<ng-template #loggedIn>
+    <h3>sign out</h3>
+
+    <button (click)="onSignOut()">sign out</button>
+</ng-template>
