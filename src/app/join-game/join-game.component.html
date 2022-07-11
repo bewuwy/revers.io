@@ -1,10 +1,40 @@
-<h3>join an open game</h3>
+<h3>
+    join an open game
+    <button (click)="onRefresh($event)">refresh</button>
+</h3>
+
+<div *ngIf="gamesList.length == 0">
+    <span>there are currently no open games D:</span>
+</div>
 
 <div *ngFor="let gameId of gamesList" id="gamesList">
     <button (click)="joinGame(gameId)">join game {{ gameId }}</button>
 </div>
 <!-- <a routerLink="/play/game134">game 134</a> -->
 
-<h3>create a new game</h3>
+<h3>join a private game</h3>
+<form (ngSubmit)="onJoinPrivateGame()" [formGroup]="joinGameForm">
+    <div>
+        <label for="gameName">game name</label>
+        <input type="text" id="gameName" name="gameName" formControlName="gameId" />
+    </div>
 
-<button (click)="createGame()" onclick="this.disabled=true;">new game</button>
+    <input type="submit" value="join game">
+</form>
+
+<h3>create a new game</h3>
+<form (ngSubmit)="onCreateGame();" [formGroup]="gameForm">
+    <div>
+        <label for="gameName">game name</label>
+        <input type="text" id="gameName" name="gameName" formControlName="gameName" />
+    </div>
+
+    <div>
+        <label for="gameOpen">game open</label>
+        <input type="checkbox" id="gameOpen" name="gameOpen" formControlName="gameOpen" />
+    </div>
+
+    <input type="submit" value="create game" />
+    <!-- <button (click)="createGame($event)">create game</button> -->
+</form>
+<!-- <button (click)="createGame()" onclick="this.disabled=true;">new game</button> -->

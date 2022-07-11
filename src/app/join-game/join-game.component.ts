@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
-import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit, updateDoc } from "@angular/fire/firestore"; 
+import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit } from "@angular/fire/firestore"; 
 import { Router } from '@angular/router';
 import { Auth } from '@angular/fire/auth';
+import { FormControl, FormGroup } from '@angular/forms';
 
 
 @Component({
@@ -12,36 +13,74 @@ import { Auth } from '@angular/fire/auth';
 })
 export class JoinGameComponent implements OnInit {
 
+  gameForm = new FormGroup({
+    gameOpen: new FormControl(true, {nonNullable: true}),
+    gameName: new FormControl('', {nonNullable: false}),
+  });
+
+  joinGameForm = new FormGroup({
+    gameId: new FormControl('', {nonNullable: true}),
+  });
+
   gamesList: string[] = [];
 
   constructor(private db: Firestore, private auth: Auth, private router: Router) { }
 
+  onCreateGame() {
+    console.log(this.gameForm.value);
+
+    let open = this.gameForm.value.gameOpen;
+    if (open === undefined) {
+      open = true;
+    }
+    const name = this.gameForm.value.gameName || null;
+
+    this.createGame(open, name);
+  }
+
   // create a new game
-  createGame() {
+  createGame(open: boolean, name: string | null) {
     const userId = this.auth.currentUser?.uid;
     if (!userId) {
+      console.log("you need to be logged in to create a game");
       return;
     }
 
-    const id = uuidv4();
-    console.log("create game", id);
-
     const gamesCollection = collection(this.db, 'game');
-    const gameDoc = doc(gamesCollection, id);
+    let id: string = name || uuidv4();
 
-    setDoc(gameDoc, {
-      clicks: 0,
-      players: [userId],
-      completed: false,
-      created: new Date(),
-      winner: null
-    }).then(() => {
-      console.log("created game", id);
-      this.router.navigate(["/play", id]);
+    // check if custom game name is already in use
+    let gameDoc = doc(gamesCollection, id);
+    getDoc(gameDoc).then(docSnapshot => {
+      if (docSnapshot.exists()) {
+        console.log("game name already in use");
+        id = uuidv4();
+      }
 
-    }).catch((error) => {
-      console.log("error creating game", error);
-    });
+      // create game
+      gameDoc = doc(gamesCollection, id);
+
+      setDoc(gameDoc, {
+        clicks: 0,
+        players: [userId],
+        completed: false,
+        open: open,
+        created: new Date(),
+        winner: null
+      }).then(() => {
+        console.log("created game", id);
+        this.router.navigate(["/play", id]);
+  
+      }).catch((error) => {
+        console.log("error creating game", error);
+      });
+    });    
+  }
+
+  onJoinPrivateGame() {
+    if (this.joinGameForm.value.gameId) {
+      this.joinGame(this.joinGameForm.value.gameId);
+    }
   }
 
   // join a game
@@ -60,6 +99,7 @@ export class JoinGameComponent implements OnInit {
 
       if (data && data["players"].indexOf(userId) === -1) {
         data["players"].push(userId);
+        data["open"] = data["players"].length < 2;
 
         setDoc(gameDoc, data).then(() => {
           console.log("joined game", gameId);
@@ -75,17 +115,34 @@ export class JoinGameComponent implements OnInit {
 
   }
 
-  ngOnInit(): void {
+  onRefresh (event: any) {
+    var btn = event.target || event.srcElement || event.currentTarget;
+
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.disabled = false;
+    }, 15 * 1000);  // TODO: add a timer
+    
+    this.gamesList = [];
+    this.getOpenGames();
+  }
+
+  getOpenGames() {
     // get open games
     const gamesCollection = collection(this.db, 'game');
-    const q = query(gamesCollection, where('completed', '==', false), orderBy('created'), limit(3));
 
-    const querySnapshot = getDocs(q).then((querySnapshot) => {
+    // query for open games
+    const q = query(gamesCollection, where('completed', '==', false), where("open", "==", true), limit(3), orderBy('created'));
+    getDocs(q).then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         // console.log(doc.id, " => ", doc.data());
 
         this.gamesList.push(doc.id);
       });
     });
+  }
+
+  ngOnInit(): void {
+    this.getOpenGames();
   }
 }
