@@ -16,6 +16,7 @@ export class PlayGameComponent implements OnInit {
   domain: string = "";
   gameId: string = "";
   data: any;
+  valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
 
   opponent: { name: string, id: string } = { name: "", id: "" };
   createdDelta: string = "";
@@ -319,6 +320,35 @@ export class PlayGameComponent implements OnInit {
     onSnapshot(gameDoc, (doc) => {
       this.data = doc.data();
 
+      if (!this.data) {
+        this.valid.valid = false;
+        this.valid.reason = "Game not found";
+
+        return;
+      }
+
+      console.log(this.auth.currentUser);
+
+      // check if current user logged in
+      if (!this.auth.currentUser) {
+        this.valid.valid = false;
+        this.valid.reason = "You need to log in to play";
+
+        return;
+      }
+
+      // check if current user in game
+      if (this.data.players.indexOf(this.auth.currentUser?.uid) === -1) {
+        this.valid.valid = false;
+        this.valid.reason = "You are not in this game";
+
+        return;
+
+        // this.router.navigate(["/join"]).then(() => {
+        //   console.log("player not in game");
+        // });
+      }
+
       // recreate moves on board
       console.log("recreate moves on board");
       for (let i = 0; i < this.data.moves.length; i++) {
@@ -352,19 +382,13 @@ export class PlayGameComponent implements OnInit {
 
       this.playerColor = this.data.players.indexOf(this.auth.currentUser?.uid) === 0 ? "black" : "white";
 
-      // decide on first player
+      // decide on player turn
       if (this.data.moves.length === 0) {
+        // first turn
         this.playerTurn = this.playerColor === "white";
       }
       else {
         this.playerTurn = this.data.moves[this.data.moves.length - 1].color !== this.playerColor;
-      }
-
-      // check if current user in game
-      if (this.data.players.indexOf(this.auth.currentUser?.uid) === -1) {
-        this.router.navigate(["/join"]).then(() => {
-          console.log("player not in game");
-        });
       }
 
       // check if current user won

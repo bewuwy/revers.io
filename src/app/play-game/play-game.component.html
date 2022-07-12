@@ -1,5 +1,6 @@
-<h3>game</h3>
-<div *ngIf="data; then dataExists else dataNotExists"></div>
+<h3>Game</h3>
+
+<div *ngIf="valid.valid && data; then dataExists else dataNotExists"></div>
 
 <ng-template #dataExists>
     <div *ngIf="opponent.name; then opponentExists else opponentNotExists"></div>
@@ -45,4 +46,8 @@
     <ng-template #gameNotCompleted><p>game in progress...</p></ng-template>
 
 </ng-template>
-<ng-template #dataNotExists><p>loading data...</p></ng-template>
+<ng-template #dataNotExists>
+    <p *ngIf="valid.valid">Loading data...</p>
+
+    <p *ngIf="!valid.valid">{{ valid.reason }} D:</p>
+</ng-template>

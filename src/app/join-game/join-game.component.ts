@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
 import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit } from "@angular/fire/firestore"; 
 import { Router } from '@angular/router';
-import { Auth } from '@angular/fire/auth';
+import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { FormControl, FormGroup } from '@angular/forms';
 
 
@@ -23,6 +23,8 @@ export class JoinGameComponent implements OnInit {
   });
 
   gamesList: string[] = [];
+  user: any;
+  valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
 
   constructor(private db: Firestore, private auth: Auth, private router: Router) { }
 
@@ -40,7 +42,7 @@ export class JoinGameComponent implements OnInit {
 
   // create a new game
   createGame(open: boolean, name: string | null) {
-    const userId = this.auth.currentUser?.uid;
+    const userId = this.user.uid;
     if (!userId) {
       console.log("you need to be logged in to create a game");
       return;
@@ -62,7 +64,7 @@ export class JoinGameComponent implements OnInit {
 
       setDoc(gameDoc, {
         players: [userId],
-        playerNames: [this.auth.currentUser?.displayName],
+        playerNames: [this.user.displayName],
         moves: [],
         score: {white: 2, black: 2},
         completed: false,
@@ -87,7 +89,7 @@ export class JoinGameComponent implements OnInit {
 
   // join a game
   joinGame(gameId: string) {
-    const userId = this.auth.currentUser?.uid;
+    const userId = this.user.uid;
     if (!userId) {
       console.log("you need to be logged in to join a game");
       return;
@@ -102,7 +104,7 @@ export class JoinGameComponent implements OnInit {
 
       if (data && data["players"].indexOf(userId) === -1) {
         data["players"].push(userId);
-        data["playerNames"].push(this.auth.currentUser?.displayName);
+        data["playerNames"].push(this.user.displayName);
         data["open"] = data["players"].length < 2;
 
         setDoc(gameDoc, data).then(() => {
@@ -147,6 +149,15 @@ export class JoinGameComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    onAuthStateChanged(this.auth, (user) => {
+      this.user = user;
+
+      if (!user) {
+        this.valid.valid = false;
+        this.valid.reason = "You need to be logged in to join a game";
+      }
+    });
+
     this.getOpenGames();
   }
 }
