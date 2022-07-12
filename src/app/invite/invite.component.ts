@@ -13,6 +13,8 @@ export class InviteComponent implements OnInit {
   opponent: { name: string, id: string } = { name: "", id: "" };
   user: any;
 
+  valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
+
   constructor(private db: Firestore, private auth: Auth,
               private route: ActivatedRoute, private router: Router, ) { }
 
@@ -39,6 +41,12 @@ export class InviteComponent implements OnInit {
     });
   }
 
+  onDecline() {
+    alert("You declined the invite");
+    // redirect to index
+    this.router.navigate(["/"]);
+  }
+
   ngOnInit(): void {
     this.gameId = this.route.snapshot.paramMap.get("id") || "";
 
@@ -47,6 +55,9 @@ export class InviteComponent implements OnInit {
       if (user) {
         // console.log(user);
         this.user = user;
+      }
+      else {
+        this.user = null;
       }
     });
 
@@ -58,8 +69,25 @@ export class InviteComponent implements OnInit {
       if (gameData) {
         const opponent:any = gameData["players"].find((p:any) => p.id !== this.user.uid);
 
+        if (opponent === this.user.uid) {
+          this.valid = {valid: false, reason: "You cannot invite yourself"};
+          return;
+        }
+
         this.opponent.name = opponent;
         this.opponent.id = opponent;
+
+        // check if game is full
+        if (gameData["players"].length >= 2) {
+          this.valid.valid = false;
+          this.valid.reason = "Game is full";
+        } else {
+          this.valid.valid = true;
+        }
+      }
+      else {
+        this.valid.valid = false;
+        this.valid.reason = "Game does not exist";
       }
     });
   }

@@ -1,6 +1,30 @@
-<h3>invite</h3>
+<h3>revers.io invite</h3>
 
-<p *ngIf="!opponent.name">loading details...</p>
-<p *ngIf="opponent.name">you have been invited to a game with {{ opponent.name }}</p>
+<div *ngIf="user === null">
+    <p>You need to be logged in to accept a game invite!</p>
+</div>
 
-<button (click)="onAccept()" [disabled]="!opponent.id">accept</button>
+<div *ngIf="user && valid.valid">
+    <p *ngIf="!opponent.name">Loading invite details...</p>
+    <p *ngIf="opponent.name">You've been invited to a game with {{ opponent.name }}!</p>
+
+    <div id="buttons">
+        <button (click)="onAccept()" [disabled]="!opponent.id" id="accept">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            accept
+        </button>
+        <button (click)="onDecline()" [disabled]="!opponent.id" id="decline">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            decline
+        </button>
+    </div>
+</div>
+
+<div *ngIf="user && !valid.valid">
+    <p>Invalid invite!</p>
+    <p>{{ valid.reason }}</p>
+</div>

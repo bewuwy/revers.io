@@ -346,9 +346,6 @@ export class PlayGameComponent implements OnInit {
       this.opponent.name = this.data.playerNames.find((p:string) => p !== this.auth.currentUser?.displayName);
       this.opponent.id = this.data.players.find((p:string) => p !== this.auth.currentUser?.uid);
 
-      console.log(this.data.playerNames);
-      console.log(this.opponent);
-
       this.playerColor = this.data.players.indexOf(this.auth.currentUser?.uid) === 0 ? "black" : "white";
 
       // decide on first player

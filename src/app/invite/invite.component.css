@@ -1,0 +1,43 @@
+#buttons {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#buttons button {
+    flex-grow: 1;
+    border: none;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    color: white;
+
+    display: flex;
+    justify-content: center;
+}
+
+#buttons button svg {
+    height: 20px;
+    aspect-ratio: 1;
+    margin-right: 10px;
+}
+
+#accept {
+    background-color: #4CAF50;    
+}
+
+#decline {
+    background-color: #f44336;
+}
+
+#accept:hover {
+    background-color: #3e8e41;
+}
+
+#decline:hover {
+    background-color: #da4336;
+}
