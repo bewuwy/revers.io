@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { Firestore, collection, doc, onSnapshot, setDoc } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,6 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./play-game.component.css']
 })
 export class PlayGameComponent implements OnInit {
+  domain: string = "";
   gameId: string = "";
   data: any;
 
@@ -25,7 +27,12 @@ export class PlayGameComponent implements OnInit {
   localMoves: { x: number, y: number, color: string }[] = [];
 
   constructor(private db: Firestore, private auth: Auth, 
-              private route: ActivatedRoute, private router: Router) {  }
+              private route: ActivatedRoute, private router: Router,
+              @Inject(DOCUMENT) private document: any) {  }
+
+  getInvite(gameId: string) {
+    return this.domain + "/invite/" + gameId;
+  } 
 
   putDisk(y: number, x: number, user: boolean, color?: string) {
     // check if game started
@@ -297,6 +304,7 @@ export class PlayGameComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.domain = this.document.location.host;
     this.gameId = this.route.snapshot.paramMap.get("id") || "";
     
     this.startGame();
@@ -334,8 +342,12 @@ export class PlayGameComponent implements OnInit {
 
       this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format
 
+      // get opponent
       this.opponent.name = this.data.playerNames.find((p:string) => p !== this.auth.currentUser?.displayName);
       this.opponent.id = this.data.players.find((p:string) => p !== this.auth.currentUser?.uid);
+
+      console.log(this.data.playerNames);
+      console.log(this.opponent);
 
       this.playerColor = this.data.players.indexOf(this.auth.currentUser?.uid) === 0 ? "black" : "white";
 

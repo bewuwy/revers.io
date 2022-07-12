@@ -12,6 +12,9 @@ import { JoinGameComponent } from './join-game/join-game.component';
 import { SignInComponent } from './sign-in/sign-in.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { getAuth, provideAuth } from '@angular/fire/auth';
+import { ClipboardModule } from 'ngx-clipboard';
+import { InviteComponent } from './invite/invite.component';
+
 
 @NgModule({
   declarations: [
@@ -19,7 +22,8 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
     PlayGameComponent,
     AccountComponent,
     JoinGameComponent,
-    SignInComponent
+    SignInComponent,
+    InviteComponent
   ],
   imports: [
     BrowserModule,
@@ -28,7 +32,8 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ClipboardModule
   ],
   providers: [],
   bootstrap: [AppComponent]

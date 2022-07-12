@@ -1,0 +1,6 @@
+<h3>invite</h3>
+
+<p *ngIf="!opponent.name">loading details...</p>
+<p *ngIf="opponent.name">you have been invited to a game with {{ opponent.name }}</p>
+
+<button (click)="onAccept()" [disabled]="!opponent.id">accept</button>

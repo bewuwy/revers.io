@@ -9,6 +9,7 @@
     </ng-template>
     <ng-template #opponentNotExists>
         <p>waiting for an opponent...</p>
+        <a ngxClipboard [cbContent]="getInvite(gameId)" onclick="alert('copied invite link')">invite someone</a>
     </ng-template>
 
     <p>game created {{ createdDelta }} ago</p>
