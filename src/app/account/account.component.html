@@ -6,7 +6,9 @@
     <p>email: {{ account.email }}</p>
     <p>email verified: {{ account.emailVerified }}</p>
 
-    <h3>your active games</h3>
+    <h3>Your active games</h3>
+
+    <p *ngIf="games.length === 0">You don't have any active games! Join (or create) one <a href="/join">here</a></p>
 
     <div id="games">
         <div *ngFor="let game of games">

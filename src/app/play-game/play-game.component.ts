@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
-import { Firestore, collection, doc, onSnapshot, setDoc } from '@angular/fire/firestore';
+import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 
 // import { Game } from '../game';
@@ -277,6 +277,9 @@ export class PlayGameComponent implements OnInit {
           this.data.winner = this.won ? this.auth.currentUser?.uid : this.opponent.id;
         }
 
+        // clear data
+        this.data.moves = [];
+
         this.data.completed = true;
       }
 
@@ -360,11 +363,6 @@ export class PlayGameComponent implements OnInit {
           // console.log("move already on local board");
           continue;
         }
-        // else {
-        //   console.log("local move differs from remote move");
-        //   console.log("local move: ", this.localMoves[i]);
-        //   console.log("remote move: ", move);
-        // }
 
         // console.log("putting ", move.color, " at ", move.x, move.y);
         this.putDisk(move.y, move.x, false, move.color);
@@ -401,5 +399,24 @@ export class PlayGameComponent implements OnInit {
 
       // console.log("data: ", doc.data());
     });
+  }
+
+  ngOnDestroy(): void {
+  
+    // delete game if there is only one player left
+    if (this.data.players.length === 1) {
+      deleteDoc(doc(collection(this.db, 'game'), this.gameId));
+    }
+
+    // remove current user from game if it has finished
+    if (this.data.completed) {
+      this.data.players.splice(this.data.players.indexOf(this.auth.currentUser?.uid), 1);
+
+      // update game doc
+      const gamesCollection = collection(this.db, 'game');
+      const gameDoc = doc(gamesCollection, this.gameId);
+
+      updateDoc(gameDoc, { players: this.data.players });
+    }
   }
 }
