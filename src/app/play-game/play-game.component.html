@@ -32,7 +32,7 @@
                  attr.data-row="{{ i }}" attr.data-column="{{ j }}" (click)="putDisk(i, j, true);">
             
                 <div class="disk" *ngIf="board[i][j]"
-                     [ngClass]="board[i][j]"></div>
+                     [ngClass]="board[i][j]" [class.flip]="flip[i][j]" ></div>
             </div>
         </div>
     </div>

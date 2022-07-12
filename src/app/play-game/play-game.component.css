@@ -71,6 +71,11 @@
     font-size: 30px;
     line-height: 50px;
     /* cursor: pointer; */
+
+    /* transitions */
+    transition: all;
+    transition-duration: 0.1s;
+    transition-delay: 0.2s;
 }
 
 .white {
@@ -78,4 +83,17 @@
 }
 .black {
     background-color: black;
+}
+
+.flip {
+    animation: flip 1s;
+}
+
+@keyframes flip {
+    0% {
+        transform: rotateY(0deg);
+    }
+    100% {
+        transform: rotateY(180deg);
+    }
 }

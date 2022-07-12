@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './play-game.component.html',
   styleUrls: ['./play-game.component.css']
 })
+
 export class PlayGameComponent implements OnInit {
   domain: string = "";
   gameId: string = "";
@@ -22,6 +23,8 @@ export class PlayGameComponent implements OnInit {
 
   boardSize: { x: number, y: number } = { x: 4, y: 4 };
   board: string[][] = [];
+  flip: boolean[][] = [];
+
   playerColor: string = "";
   playerTurn: boolean;
   localMoves: { x: number, y: number, color: string }[] = [];
@@ -32,7 +35,17 @@ export class PlayGameComponent implements OnInit {
 
   getInvite(gameId: string) {
     return this.domain + "/invite/" + gameId;
-  } 
+  }
+
+  flipDisk(y: number, x:number, color: string) {
+    this.board[y][x] = color;
+
+    // animation
+    this.flip[y][x] = true;
+    setTimeout(() => {
+      this.flip[y][x] = false;
+    }, 1000);
+  }
 
   putDisk(y: number, x: number, user: boolean, color?: string) {
     // check if game started
@@ -58,7 +71,7 @@ export class PlayGameComponent implements OnInit {
     }
     const opponentColor = color === "black" ? "white" : "black";
 
-    this.board[y][x] = color;
+    this.flipDisk(y, x, color);
 
     // reverse disks
     // on x-axis
@@ -75,9 +88,8 @@ export class PlayGameComponent implements OnInit {
 
           for (let j = start; j <= end; j++) {
             if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
-            this.board[y][j] = color;
 
-            // console.log("l reverse: ", y, j);
+            this.flipDisk(y, j, color);
           }
           break;
         }
@@ -95,9 +107,8 @@ export class PlayGameComponent implements OnInit {
 
           for (let j = start; j <= end; j++) {
             if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
-            this.board[y][j] = color;
-
-            // console.log("r reverse: ", y, j);
+            
+            this.flipDisk(y, j, color);
           }
           break;
         }
@@ -115,9 +126,8 @@ export class PlayGameComponent implements OnInit {
 
           for (let j = start; j <= end; j++) {
             if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
-            this.board[j][x] = color;
-
-            // console.log("u reverse: ", j, x);
+            
+            this.flipDisk(j, x, color);
           }
           break;
         }
@@ -135,9 +145,8 @@ export class PlayGameComponent implements OnInit {
 
           for (let j = start; j <= end; j++) {
             if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
-            this.board[j][x] = color;
-
-            // console.log("d reverse: ", j, x);
+            
+            this.flipDisk(j, x, color);
           }
           break;
         }
@@ -163,9 +172,8 @@ export class PlayGameComponent implements OnInit {
             const y_ = y-j;
 
             if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
-            this.board[y_][x_] = color;
 
-            // console.log("ul reverse: ", y_, x_); 
+            this.flipDisk(y_, x_, color);
           }
           break;
         }
@@ -190,9 +198,8 @@ export class PlayGameComponent implements OnInit {
             const y_ = y-j;
 
             if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
-            this.board[y_][x_] = color;
 
-            // console.log("ur reverse: ", y_, x_);
+            this.flipDisk(y_, x_, color);
           }
           break;
         }
@@ -217,9 +224,8 @@ export class PlayGameComponent implements OnInit {
             const y_ = y+j;
 
             if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
-            this.board[y_][x_] = color;
-
-            // console.log("dl reverse: ", y_, x_);
+            
+            this.flipDisk(y_, x_, color);
           }
           break;
         }
@@ -244,16 +250,12 @@ export class PlayGameComponent implements OnInit {
             const y_ = y+j;
 
             if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
-            this.board[y_][x_] = color;
-
-            // console.log("dr reverse: ", y_, x_);
+            
+            this.flipDisk(y_, x_, color);
           }
           break;
         }
       }
-
-    // log board
-    // console.log(JSON.parse(JSON.stringify(this.board)));
  
     // update database only if move was made by a player
     if (user) {
@@ -290,17 +292,19 @@ export class PlayGameComponent implements OnInit {
     // create this.board
     for (let i = 0; i < this.boardSize.x; i++) {
       this.board[i] = [];
+      this.flip[i] = [];
       for (let j = 0; j < this.boardSize.y; j++) {
         this.board[i][j] = "";
+        this.flip[i][j] = false;
       }
     }
 
     const center = Math.floor(this.boardSize.x / 2);
 
-    this.board[center-1][center-1] = "black";
-    this.board[center-1][center] = "white";
-    this.board[center][center] = "black";
-    this.board[center][center-1] = "white";
+    this.flipDisk(center-1, center-1, "black")
+    this.flipDisk(center-1, center, "white")
+    this.flipDisk(center, center, "black")
+    this.flipDisk(center, center-1, "white")
   }
 
   ngOnInit(): void {
