@@ -23,6 +23,9 @@ export class JoinGameComponent implements OnInit {
   });
 
   gamesList: string[] = [];
+  refreshRoll: boolean = false;
+  refreshAllow: boolean = true;
+
   user: any;
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
 
@@ -121,19 +124,27 @@ export class JoinGameComponent implements OnInit {
 
   }
 
-  onRefresh (event: any) {
-    var btn = event.target || event.srcElement || event.currentTarget;
+  onRefresh () {
+    if (!this.refreshAllow) {
+      return;
+    }
 
-    btn.disabled = true;
+    this.refreshRoll = true;
     setTimeout(() => {
-      btn.disabled = false;
+      this.refreshRoll = false;
+    }, 1000);
+
+    this.refreshAllow = false;
+    setTimeout(() => {
+      this.refreshAllow = true;
     }, 15 * 1000);  // TODO: add a timer
     
-    this.gamesList = [];
     this.getOpenGames();
   }
 
   getOpenGames() {
+    this.gamesList = [];
+
     // get open games
     const gamesCollection = collection(this.db, 'game');
 

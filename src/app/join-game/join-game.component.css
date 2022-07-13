@@ -1,3 +1,120 @@
 button {
     margin-bottom: .5rem;
 }
+
+.refresh {
+    /* transparent */
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .refresh svg {
+        color: #0e86e9;
+    }
+
+    .refresh:disabled, .refresh[disabled=true] {
+        cursor: not-allowed;
+        /* background-color: red; */
+    }
+
+    .refresh:disabled svg, .refresh[disabled=true] svg {
+        color: #ccc;
+    }
+
+    @keyframes roll {
+        0% {
+            transform: rotate(360deg);
+        }
+        100% {
+            transform: rotate(0deg);
+        }
+    }
+
+    .roll {
+        animation: roll 1s infinite;
+    }
+
+#join-container {
+    display: flex;
+    flex-direction: row;
+    /* align-items: center; */
+    justify-content: center;
+    width: 100%;
+
+    gap: 3%;
+}
+
+    .join {
+        width: 50%;
+        /* padding: 0% 2.5%; */
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        /* border: 1px solid red; */
+    }
+
+    .join h3 {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+
+#create form > * {
+    margin-left: 0;
+    margin-right: 0;
+
+    width: 100%;
+}
+
+#create-submit {
+    display: flex;
+}
+
+    #create-submit input[type="submit"] {
+        flex-grow: 0;
+
+        margin-left: 5%;
+        width: fit-content;
+    }
+
+#create-open {
+    display: flex;
+
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+    #create-open > * {
+        margin: 0;
+    }
+
+    #create-open input[type="checkbox"] {
+        margin-left: 10%;
+    }
+
+form {
+    width: 100%;
+}
+
+    form input[type="text"] {
+        margin: auto;
+        width: 92%;
+    }
+
+    
+    form label {
+        /* stick to left */
+        align-self: flex-start;
+        margin-left: 4%;
+    }

@@ -9,6 +9,13 @@ body {
     align-items: center;
     justify-content: center;
     font-family: 'Roboto', sans-serif;
+
+    width: 50vw;
+    margin: auto;
+}
+
+app-root {
+    width: 100%;
 }
 
 div > span {
@@ -22,10 +29,6 @@ form {
     justify-content: center;
 }
 
-form label {
-    margin-right: .5rem;
-}
-
 form input {
     flex-grow: 1;
     padding: 12px 20px;
@@ -33,6 +36,10 @@ form input {
     display: inline-block;
     border: 1px solid #ccc;
     box-sizing: border-box;
+}
+
+form label {
+    margin-bottom: .5rem;
 }
 
 form > div {
@@ -44,4 +51,32 @@ form > div {
 
 a {
     color: #0e86e9;
+}
+
+svg {
+    width: 1.5rem;
+    height: 1.5rem;
+
+    color: black;
+}
+
+button, input[type="submit"] {
+    /* button css */
+    background-color: #0e86e9;
+    color: #fff;
+    padding: 12px 14px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    text-align: center;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button svg {
+    margin-right: .25rem;
+    color: white;
 }

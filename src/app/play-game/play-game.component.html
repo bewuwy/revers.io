@@ -9,41 +9,48 @@
         <p>you are playing as <b>{{ playerColor }}</b></p>
     </ng-template>
     <ng-template #opponentNotExists>
-        <p>waiting for an opponent...</p>
-        <a ngxClipboard [cbContent]="getInvite(gameId)" onclick="alert('copied invite link')">invite someone</a>
+        <div id="invite-container">
+            <p>waiting for an opponent...</p>
+            <button ngxClipboard [cbContent]="getInvite(gameId)" onclick="alert('copied invite link')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                invite to game
+            </button>
+        </div>
     </ng-template>
 
     <p>game created {{ createdDelta }} ago</p>
 
-    <div id="score">
-        <h3>score</h3>
-        <p>white: {{ data.score.white }} black: {{ data.score.black }}</p>
-    </div>
+    <div id="board-container">
+        <h3>board</h3>
 
-    <h3>board</h3>
-
-    <p *ngIf="!playerTurn">waiting for opponent's move...</p>
-    <p *ngIf="playerTurn">your turn!</p>
-
-    <div id="board" #boardDiv [class.disabled]="!opponent.id || !playerTurn">
-        <div *ngIf="!opponent.id" id="curtain"><span>waiting for an opponent...</span></div>
-        <div class="row" *ngFor="let item of [].constructor(boardSize.y); let i = index"
-             attr.data-row="{{ i }}">
-            <div class="cell" *ngFor="let item_ of [].constructor(boardSize.x); let j = index"
-                 attr.data-row="{{ i }}" attr.data-column="{{ j }}" (click)="putDisk(i, j, true);">
-            
-                <div class="disk" *ngIf="board[i][j]"
-                     [ngClass]="board[i][j]" [class.flip]="flip[i][j]" ></div>
+        <div id="board" #boardDiv [class.disabled]="!opponent.id || !playerTurn">
+            <div *ngIf="!opponent.id" id="curtain"><span>waiting for an opponent...</span></div>
+            <div class="row" *ngFor="let item of [].constructor(boardSize.y); let i = index"
+                 attr.data-row="{{ i }}">
+                <div class="cell" *ngFor="let item_ of [].constructor(boardSize.x); let j = index"
+                     attr.data-row="{{ i }}" attr.data-column="{{ j }}" (click)="putDisk(i, j, true);">
+        
+                    <div class="disk" *ngIf="board[i][j]"
+                         [ngClass]="board[i][j]" [class.flip]="flip[i][j]" ></div>
+                </div>
             </div>
         </div>
+
+        <div *ngIf="!data.completed">    
+            <p *ngIf="!playerTurn">waiting for opponent's move...</p>
+            <p *ngIf="playerTurn">your turn!</p>
+        </div>
+
+        <div id="score">
+            <h3>score</h3>
+            <p>white: {{ data.score.white }} black: {{ data.score.black }}</p>
+        
+            <p *ngIf="data.completed">game completed - <b *ngIf="won === true">you won!</b><b *ngIf="won === false">you lost!</b><b *ngIf="won === null">tie!</b></p>
+        </div>
+
     </div>
-
-    <div *ngIf="data.completed; then gameCompleted else gameNotCompleted"></div>
-
-    <ng-template #gameCompleted>
-        <p>game completed - <b *ngIf="won === true">you won!</b><b *ngIf="won === false">you lost!</b><b *ngIf="won === null">tie!</b></p>
-    </ng-template>
-    <ng-template #gameNotCompleted><p>game in progress...</p></ng-template>
 
 </ng-template>
 <ng-template #dataNotExists>

@@ -1,44 +1,50 @@
 <h2>Join a game!</h2>
 
 <div *ngIf="valid.valid">
-    <h3>
-        Join an open game
-        <button (click)="onRefresh($event)">refresh</button>
-    </h3>
+    <div id="join-container">
+        <div class="join">
+            <h3>
+                Join an open game
+                <button class="refresh" [disabled]="!this.refreshAllow" (click)="onRefresh()">
+                    <svg [class.roll] = "this.refreshRoll" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </h3>
+            <div *ngIf="gamesList.length == 0">
+                <span>there are currently no open games D:</span>
+            </div>
+            <div *ngFor="let gameId of gamesList" id="gamesList">
+                <button (click)="joinGame(gameId)">join game {{ gameId }}</button>
+            </div>
+        </div>
 
-    <div *ngIf="gamesList.length == 0">
-        <span>there are currently no open games D:</span>
+        <div class="join">
+            <h3>Join a private game</h3>
+            <form (ngSubmit)="onJoinPrivateGame()" [formGroup]="joinGameForm">
+                <label for="gameName">game name</label>
+                <input type="text" id="gameName" name="gameName" formControlName="gameId" autocomplete="off" />
+                <input type="submit" value="join game">
+            </form>
+        </div>
     </div>
 
-    <div *ngFor="let gameId of gamesList" id="gamesList">
-        <button (click)="joinGame(gameId)">join game {{ gameId }}</button>
+    <div id="create">
+        <h3>Create a new game</h3>
+        <form (ngSubmit)="onCreateGame();" [formGroup]="gameForm">
+            <label for="gameName">game name</label>
+            <input type="text" id="gameName" name="gameName" formControlName="gameName" autocomplete="off" />
+
+            <div id="create-submit">
+                <div id="create-open">
+                    <label for="gameOpen">open</label>
+                    <input type="checkbox" id="gameOpen" name="gameOpen" formControlName="gameOpen" />
+                </div>
+
+                <input type="submit" value="create game" />
+            </div>
+        </form>
     </div>
-    <!-- <a routerLink="/play/game134">game 134</a> -->
-
-    <h3>Join a private game</h3>
-    <form (ngSubmit)="onJoinPrivateGame()" [formGroup]="joinGameForm">
-        <div>
-            <label for="gameName">game name</label>
-            <input type="text" id="gameName" name="gameName" formControlName="gameId" />
-        </div>
-
-        <input type="submit" value="join game">
-    </form>
-
-    <h3>Create a new game</h3>
-    <form (ngSubmit)="onCreateGame();" [formGroup]="gameForm">
-        <div>
-            <label for="gameName">game name</label>
-            <input type="text" id="gameName" name="gameName" formControlName="gameName" />
-        </div>
-
-        <div>
-            <label for="gameOpen">game open</label>
-            <input type="checkbox" id="gameOpen" name="gameOpen" formControlName="gameOpen" />
-        </div>
-
-        <input type="submit" value="create game" />
-    </form>
 </div>
 <div *ngIf="!valid.valid">
     <p>{{ valid.reason }} D:</p>

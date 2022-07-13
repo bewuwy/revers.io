@@ -277,9 +277,6 @@ export class PlayGameComponent implements OnInit {
           this.data.winner = this.won ? this.auth.currentUser?.uid : this.opponent.id;
         }
 
-        // clear data
-        this.data.moves = [];
-
         this.data.completed = true;
       }
 
@@ -330,8 +327,6 @@ export class PlayGameComponent implements OnInit {
         return;
       }
 
-      console.log(this.auth.currentUser);
-
       // check if current user logged in
       if (!this.auth.currentUser) {
         this.valid.valid = false;
@@ -353,7 +348,7 @@ export class PlayGameComponent implements OnInit {
       }
 
       // recreate moves on board
-      console.log("recreate moves on board");
+      console.log("recreate", this.data.moves.length-this.localMoves.length, "moves on board");
       for (let i = 0; i < this.data.moves.length; i++) {
         const move = this.data.moves[i];
 

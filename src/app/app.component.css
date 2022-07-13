@@ -1,3 +1,29 @@
+nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
 nav > * {
     margin-right: 1rem;
+}
+
+nav .account-div {
+    display: flex;
+    flex-direction: row;
+
+    margin-right: 0;
+    margin-left: auto;
+}
+
+    nav .account-div > *:not(:last-child) {
+        margin-right: .5rem;
+    }
+
+nav button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: bold;
 }
