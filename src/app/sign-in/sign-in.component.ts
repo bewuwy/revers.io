@@ -3,6 +3,8 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, Auth, signOut, updateProfile } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 
+// TODO: login through google
+
 @Component({
   selector: 'app-sign-in',
   templateUrl: './sign-in.component.html',
@@ -31,13 +33,17 @@ export class SignInComponent implements OnInit {
   ngOnInit(): void { }
 
   onSubmitRegister() {
-    if (this.registerForm.value.email && this.registerForm.value.password && this.registerForm.value.username) {
+    this.registerForm.markAllAsTouched();
+
+    if (this.registerForm.value.email && this.registerForm.value.password && this.registerForm.value.username && this.registerForm.valid) {
       this.signUp(this.registerForm.value.email, this.registerForm.value.password, this.registerForm.value.username);
     }
   }
   
   onSubmitLogin() {
-    if (this.loginForm.value.email && this.loginForm.value.password) {
+    this.loginForm.markAllAsTouched();
+
+    if (this.loginForm.value.email && this.loginForm.value.password && this.loginForm.valid) {
       this.signIn(this.loginForm.value.email, this.loginForm.value.password);
     }
   }
@@ -66,11 +72,20 @@ export class SignInComponent implements OnInit {
 
   signIn(email: string, password: string) {
     signInWithEmailAndPassword(this.auth, email, password).then((user) => {
+      alert("Logged in successfully!");  // TODO: change alert to something more user-friendly
 
-      // navigate to account page
-      this.router.navigate(['account']);
+      // navigate to join-game page
+      this.router.navigate(['join']);
     }).catch((error) => {
-      console.log("error: ", error);
+      // wrong password
+      if (error.code === 'auth/wrong-password') {
+        console.log("wrong password");
+        this.loginForm.controls.password.setErrors({'wrongPassword': true});
+      }
+
+      else {
+        console.log("error: ", error);
+      }
     });
   }
 

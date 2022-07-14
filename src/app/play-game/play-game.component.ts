@@ -4,7 +4,7 @@ import { Auth } from '@angular/fire/auth';
 import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 
-// import { Game } from '../game';
+// TODO: play without an account
 
 @Component({
   selector: 'app-play-game',

@@ -4,38 +4,61 @@
     <h3>sign in</h3>
 
     <form (ngSubmit)="onSubmitLogin();" [formGroup]="loginForm" >
-        <div>
-            <label for="login-email">e-mail: </label>
-            <input id="login-email" name="email" type="email" formControlName="email">
+        <label for="login-email">e-mail (required)</label>
+        <input id="login-email" name="email" type="email" formControlName="email" required >
+
+        <div *ngIf="loginForm.controls['email'].invalid && (loginForm.controls['email'].dirty || loginForm.controls['email'].touched)" class="alert">
+            <span *ngIf="loginForm.controls['email'].errors!['required']">*e-mail required</span>
         </div>
 
-        <div>
-            <label for="login-password">password: </label>
-            <input id="login-password" name="pass" type="password" formControlName="password">
+        <label for="login-password">password (required)</label>
+        <input id="login-password" name="pass" type="password" formControlName="password" required minlength="6" >
+
+        <div *ngIf="loginForm.controls['password'].invalid && (loginForm.controls['password'].dirty || loginForm.controls['password'].touched)" class="alert">
+            <span *ngIf="loginForm.controls['password'].errors!['required']">*password required</span>
+            <span *ngIf="loginForm.controls['password'].touched && loginForm.controls['password'].errors!['minlength']">*password must be at least 6 characters</span>
+            <span *ngIf="loginForm.controls['password'].errors!['wrongPassword']">incorrect user or password!</span>
         </div>
 
-        <input type="submit" value="sign in">
+        <button type="submit">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            sign in
+        </button> 
     </form>
 
     <h3>sign up</h3>
 
     <form (ngSubmit)="onSubmitRegister();" [formGroup]="registerForm" >
-        <div>
-            <label for="register-username">username: </label>
-            <input id="register-username" name="username" type="text" formControlName="username">
+        <label for="register-username">username (required)</label>
+        <input id="register-username" name="username" type="text" formControlName="username" autocomplete="off" required >
+
+        <div *ngIf="registerForm.controls['username'].invalid && (registerForm.controls['username'].dirty || registerForm.controls['username'].touched)" class="alert">
+            <span *ngIf="registerForm.controls['username'].errors!['required']">*username required</span>
         </div>
 
-        <div>
-            <label for="register-email">e-mail: </label>
-            <input id="register-email" name="email" type="email" formControlName="email">
+        <label for="register-email">e-mail (required)</label>
+        <input id="register-email" name="email" type="email" formControlName="email" required >
+
+        <div *ngIf="registerForm.controls['email'].invalid && (registerForm.controls['email'].dirty || registerForm.controls['email'].touched)" class="alert">
+            <span *ngIf="registerForm.controls['email'].errors!['required']">*e-mail required</span>
         </div>
 
-        <div>
-            <label for="register-password">password: </label>
-            <input id="register-password" name="pass" type="password" formControlName="password">
+        <label for="register-password">password (required)</label>
+        <input id="register-password" name="pass" type="password" formControlName="password" required minlength="6" >
+
+        <div *ngIf="registerForm.controls['password'].invalid && (registerForm.controls['password'].dirty || registerForm.controls['password'].touched)" class="alert">
+            <span *ngIf="registerForm.controls['password'].errors!['required']">*password required</span>
+            <span *ngIf="registerForm.controls['password'].errors!['minlength']">*password must contain at least 6 characters</span>
         </div>
 
-        <input type="submit" value="sign up">
+        <button type="submit">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            sign up
+        </button>
     </form>
 </ng-template>
 

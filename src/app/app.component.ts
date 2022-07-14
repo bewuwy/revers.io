@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { onAuthStateChanged, Auth, User } from '@angular/fire/auth';
+import { onAuthStateChanged, Auth, User, signOut } from '@angular/fire/auth';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +12,7 @@ export class AppComponent {
   title = 'revers_io_angular';
   user: User | null = null;
 
-  constructor(private auth: Auth) {
+  constructor(private auth: Auth, private router: Router) {
     onAuthStateChanged(this.auth, (user) => {
       if (user) {
         this.user = user;
@@ -22,6 +23,17 @@ export class AppComponent {
         this.user = null;
       }
     });
+  }
+
+  onLoginClick() {
+    if (!this.user) {
+      this.router.navigate(['/login']);
+    }
+    else {
+      // logout user
+      signOut(this.auth);
+      return;
+    }
   }
 
 }

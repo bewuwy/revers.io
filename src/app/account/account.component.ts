@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Auth, User, onAuthStateChanged } from '@angular/fire/auth';
 import { Firestore, collection, doc, query, where, getDocs } from '@angular/fire/firestore';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -13,7 +14,7 @@ export class AccountComponent implements OnInit {
   account : User | null = null;
   games: any[] = [];
 
-  constructor(private auth: Auth, private db: Firestore) { }
+  constructor(private auth: Auth, private db: Firestore, private router: Router) { }
 
   ngOnInit(): void { 
     onAuthStateChanged(this.auth, (user) => {
@@ -34,6 +35,7 @@ export class AccountComponent implements OnInit {
 
       } else {
         this.account = null;
+        this.router.navigate(['/login']);
       }
     });
   }

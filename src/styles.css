@@ -38,8 +38,13 @@ form {
         box-sizing: border-box;
     }
 
+    form input[type="text"], form input[type="password"], form input[type="email"] {
+        width: 100%;
+    }
+
     form label {
         margin-bottom: .5rem;
+        align-self: flex-start;
     }
 
     form > div {
