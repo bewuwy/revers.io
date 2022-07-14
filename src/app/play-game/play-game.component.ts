@@ -301,7 +301,7 @@ export class PlayGameComponent implements OnInit {
       this.data.winner = this.won ? this.auth.currentUser?.uid : this.opponent.id;
     }
 
-    this.data.completed = true;
+    this.data.status.completed = true;
   }
 
   skipTurn() {
@@ -498,7 +498,12 @@ export class PlayGameComponent implements OnInit {
         this.won = this.data.winner === this.auth.currentUser?.uid;
       }
 
-      if (!this.data.status.completed) {
+      // get game's creation date
+      this.data.created = new Date(this.data.created.seconds * 1000);
+      this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format    
+
+      if (this.data && !this.data.status.completed) {
+        console.log(this.data);
       
         // decide on player turn
         if (this.data.moves.length === 0) {
@@ -515,9 +520,6 @@ export class PlayGameComponent implements OnInit {
           alert("No legal moves, skipping turn");
           this.skipTurn();
         }
-
-        this.data.created = new Date(this.data.created.seconds * 1000);
-        this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format    
       }
 
       // console.log("data: ", doc.data());
