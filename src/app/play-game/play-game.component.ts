@@ -5,6 +5,7 @@ import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc } 
 import { ActivatedRoute, Router } from '@angular/router';
 
 // TODO: play without an account
+// TODO: check if move is legal
 
 @Component({
   selector: 'app-play-game',
@@ -25,6 +26,7 @@ export class PlayGameComponent implements OnInit {
   boardSize: { x: number, y: number } = { x: 4, y: 4 };
   board: string[][] = [];
   flip: boolean[][] = [];
+  legalMove: boolean[][] = [];
 
   playerColor: string = "";
   playerTurn: boolean;
@@ -48,31 +50,8 @@ export class PlayGameComponent implements OnInit {
     }, 1000);
   }
 
-  putDisk(y: number, x: number, user: boolean, color?: string) {
-    // check if game started
-    if (user && !this.opponent.id) {
-      console.log("game not started");
-      return;
-    }
-
-    // check if place not taken
-    if (user && this.board[y][x] !== "") {
-      console.log("place taken");
-      return;
-    }
-
-    // check if player turn
-    if (user && !this.playerTurn) {
-      console.log("not your turn");
-      return;
-    }
-
-    if (color === undefined) {
-      color = this.playerColor;
-    }
-    const opponentColor = color === "black" ? "white" : "black";
-
-    this.flipDisk(y, x, color);
+  getFlippedDisks(y: number, x:number, color:string) {
+    let flipped:any[] = [];
 
     // reverse disks
     // on x-axis
@@ -88,9 +67,10 @@ export class PlayGameComponent implements OnInit {
           const end = x-1;
 
           for (let j = start; j <= end; j++) {
-            if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
+            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
 
-            this.flipDisk(y, j, color);
+            // this.flipDisk(y, j, color);
+            flipped.push({y: y, x: j});
           }
           break;
         }
@@ -107,9 +87,10 @@ export class PlayGameComponent implements OnInit {
           const end = i-1;
 
           for (let j = start; j <= end; j++) {
-            if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
+            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
             
-            this.flipDisk(y, j, color);
+            // this.flipDisk(y, j, color);
+            flipped.push({y: y, x: j});
           }
           break;
         }
@@ -126,9 +107,10 @@ export class PlayGameComponent implements OnInit {
           const end = y-1;
 
           for (let j = start; j <= end; j++) {
-            if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
+            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
             
-            this.flipDisk(j, x, color);
+            // this.flipDisk(j, x, color);
+            flipped.push({y: j, x: x});
           }
           break;
         }
@@ -145,9 +127,10 @@ export class PlayGameComponent implements OnInit {
           const end = i-1;
 
           for (let j = start; j <= end; j++) {
-            if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
+            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
             
-            this.flipDisk(j, x, color);
+            // this.flipDisk(j, x, color);
+            flipped.push({y: j, x: x});
           }
           break;
         }
@@ -172,9 +155,10 @@ export class PlayGameComponent implements OnInit {
             const x_ = x-j;
             const y_ = y-j;
 
-            if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
+            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
 
-            this.flipDisk(y_, x_, color);
+            // this.flipDisk(y_, x_, color);
+            flipped.push({y: y_, x: x_});
           }
           break;
         }
@@ -198,9 +182,10 @@ export class PlayGameComponent implements OnInit {
             const x_ = x+j;
             const y_ = y-j;
 
-            if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
+            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
 
-            this.flipDisk(y_, x_, color);
+            // this.flipDisk(y_, x_, color);
+            flipped.push({y: y_, x: x_});
           }
           break;
         }
@@ -224,9 +209,10 @@ export class PlayGameComponent implements OnInit {
             const x_ = x-j;
             const y_ = y+j;
 
-            if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
+            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
             
-            this.flipDisk(y_, x_, color);
+            // this.flipDisk(y_, x_, color);
+            flipped.push({y: y_, x: x_});
           }
           break;
         }
@@ -250,13 +236,55 @@ export class PlayGameComponent implements OnInit {
             const x_ = x+j;
             const y_ = y+j;
 
-            if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
+            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
             
-            this.flipDisk(y_, x_, color);
+            // this.flipDisk(y_, x_, color);
+            flipped.push({y: y_, x: x_});
           }
           break;
         }
       }
+
+    return flipped;
+  }
+
+  putDisk(y: number, x: number, user: boolean, color?: string) {
+    // check if game started
+    if (user && !this.opponent.id) {
+      console.log("game not started");
+      return;
+    }
+
+    // check if place not taken
+    if (user && this.board[y][x] !== "") {
+      console.log("place taken");
+      return;
+    }
+
+    // check if player turn
+    if (user && !this.playerTurn) {
+      console.log("not your turn");
+      return;
+    }
+
+    // check if move is legal  // TODO: check also when receiving a move (a 2-player anti-cheat) 
+    if (user && !this.legalMove[y][x]) {
+      console.log("illegal move");
+      return;
+    }
+
+    if (color === undefined) {
+      color = this.playerColor;
+    }
+    const opponentColor = color === "black" ? "white" : "black";
+
+    this.flipDisk(y, x, color);
+
+    let flipped = this.getFlippedDisks(y, x, color);
+    for (let i = 0; i < flipped.length; i++) {
+      this.flipDisk(flipped[i].y, flipped[i].x, color);
+      if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
+    }
  
     // update database only if move was made by a player
     if (user) {
@@ -265,19 +293,7 @@ export class PlayGameComponent implements OnInit {
 
       // check if game over
       if (this.data.moves.length >= (this.boardSize.x * this.boardSize.y - 4)) {
-        // check tie
-        if (this.data.score["black"] === this.data.score["white"]) {
-          this.won = null;
-
-          this.data.winner = "tie";
-        } else {
-
-          const winnerColor = this.data.score["black"] > this.data.score["white"] ? "black" : "white";
-          this.won = this.playerColor === winnerColor;
-          this.data.winner = this.won ? this.auth.currentUser?.uid : this.opponent.id;
-        }
-
-        this.data.completed = true;
+        this.getWinner();
       }
 
       const gamesCollection = collection(this.db, 'game');
@@ -289,14 +305,103 @@ export class PlayGameComponent implements OnInit {
     }
   }
 
+  getWinner() {
+    // check tie
+    if (this.data.score["black"] === this.data.score["white"]) {
+      this.won = null;
+
+      this.data.winner = "tie";
+    } else {
+
+      const winnerColor = this.data.score["black"] > this.data.score["white"] ? "black" : "white";
+      this.won = this.playerColor === winnerColor;
+      this.data.winner = this.won ? this.auth.currentUser?.uid : this.opponent.id;
+    }
+
+    this.data.completed = true;
+  }
+
+  skipTurn() {
+    if (this.data.completed) { return; }
+
+    this.data.moves.push({ x: -1, y: -1, color: this.playerColor });
+
+    updateDoc(doc(collection(this.db, 'game'), this.gameId), {
+      moves: this.data.moves,
+    });
+  }
+
+  getLegalMoves() {
+    let n:number = 0;
+
+    // iterate through empty cells
+    for (let i = 0; i < this.boardSize.y; i++) {
+      for (let j = 0; j < this.boardSize.x; j++) {
+        this.legalMove[i][j] = false;
+
+        if (this.board[i][j] === "") {
+          const opponentColor = this.playerColor === "black" ? "white" : "black";
+
+          // check if opponent's disk is adjacent to this cell
+          let opponentAdj: boolean = false;
+
+          let rangeX = [...Array(this.boardSize.x).keys()];
+          let rangeY = [...Array(this.boardSize.y).keys()];
+          for (let dx=-1; dx < 2; dx++) {
+            if (opponentAdj) { break; }
+            
+            let newX =  j + dx;
+            if (!rangeX.includes(newX)) {
+              continue;
+            }
+
+            for (let dy=-1; dy < 2; dy++) {
+              let newY = i + dy;
+
+              // console.log(newY, newX);
+
+              if (!rangeY.includes(newY)) {
+                continue;
+              }
+              
+              if (!(dx === 0 && dy === 0)) {
+                // adjacent cell
+                if (this.board[newY][newX] === opponentColor) {
+                  opponentAdj = true;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (opponentAdj) {
+            let flipped = this.getFlippedDisks(i, j, this.playerColor);
+            // console.log(i, j, flipped);
+
+            // check if player can flip anything on this move
+            if (flipped.length > 0) {
+              this.legalMove[i][j] = true;
+              n++;
+            }
+          }
+        }
+      }
+    }
+  
+    // console.log(this.legalMove);
+    return n;
+  }
+
   startGame() {
     // create this.board
     for (let i = 0; i < this.boardSize.x; i++) {
       this.board[i] = [];
       this.flip[i] = [];
+      this.legalMove[i] = [];
       for (let j = 0; j < this.boardSize.y; j++) {
         this.board[i][j] = "";
         this.flip[i][j] = false;
+        this.legalMove[i][j] = false;
       }
     }
 
@@ -341,10 +446,6 @@ export class PlayGameComponent implements OnInit {
         this.valid.reason = "You are not in this game";
 
         return;
-
-        // this.router.navigate(["/join"]).then(() => {
-        //   console.log("player not in game");
-        // });
       }
 
       // recreate moves on board
@@ -359,30 +460,30 @@ export class PlayGameComponent implements OnInit {
           continue;
         }
 
+        // if there were two skips in a row, end game
+        if (i > 0 && this.data.moves[i-1].x === -1 && move.x === -1) {
+          this.getWinner();
+
+          setDoc(gameDoc, this.data);
+          break;
+        }
+
+        // if move is a skip move
+        if (move.x === -1 && move.y === -1) {
+          continue;
+        }
+
         // console.log("putting ", move.color, " at ", move.x, move.y);
         this.putDisk(move.y, move.x, false, move.color);
       }
+
       // update local moves
       this.localMoves = this.data.moves;
-
-      this.data.created = new Date(this.data.created.seconds * 1000);
-
-      this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format
 
       // get opponent
       this.opponent.name = this.data.playerNames.find((p:string) => p !== this.auth.currentUser?.displayName);
       this.opponent.id = this.data.players.find((p:string) => p !== this.auth.currentUser?.uid);
-
       this.playerColor = this.data.players.indexOf(this.auth.currentUser?.uid) === 0 ? "black" : "white";
-
-      // decide on player turn
-      if (this.data.moves.length === 0) {
-        // first turn
-        this.playerTurn = this.playerColor === "white";
-      }
-      else {
-        this.playerTurn = this.data.moves[this.data.moves.length - 1].color !== this.playerColor;
-      }
 
       // check if current user won
       if (this.data.winner === "tie") {
@@ -390,6 +491,28 @@ export class PlayGameComponent implements OnInit {
       }
       else {
         this.won = this.data.winner === this.auth.currentUser?.uid;
+      }
+
+      if (!this.data.completed) {
+      
+        // decide on player turn
+        if (this.data.moves.length === 0) {
+          // first turn
+          this.playerTurn = this.playerColor === "white";
+        }
+        else {
+          this.playerTurn = this.data.moves[this.data.moves.length - 1].color !== this.playerColor;
+        }
+
+        // get legal moves
+        let legalMovesN = this.getLegalMoves();
+        if (this.playerTurn && legalMovesN === 0) {
+          alert("No legal moves, skipping turn");
+          this.skipTurn();
+        }
+
+        this.data.created = new Date(this.data.created.seconds * 1000);
+        this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format    
       }
 
       // console.log("data: ", doc.data());

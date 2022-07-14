@@ -62,6 +62,12 @@ a {
     color: #0e86e9;
 }
 
+p.has-svg {
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+}
+
 svg {
     width: 1.5rem;
     height: 1.5rem;

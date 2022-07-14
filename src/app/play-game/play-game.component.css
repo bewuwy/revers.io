@@ -79,11 +79,11 @@
         justify-content: center;
     }
 
-    #board .cell:empty:hover {
+    #board .legal:hover {
         background-color: #829c83;
     }
 
-    #board .cell:not(:empty) {
+    #board .cell:not(.legal) {
         cursor: default;
     }
 
@@ -121,3 +121,62 @@
             transform: rotateY(180deg);
         }
     }
+
+@keyframes roll {
+    0% {
+        transform: rotate(0deg);
+    }
+    30% {
+        transform: rotate(180deg);
+    }
+    60% {
+        transform: rotate(360deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+    .rolling {
+        animation: roll 2.7s ease-in-out infinite;
+        animation-delay: 1s;
+    }
+
+@keyframes ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    10% {
+        transform: rotate(30deg);
+    }
+    20% {
+        transform: rotate(-25deg);
+    }
+    30% {
+        transform: rotate(20deg);
+    }
+    40% {
+        transform: rotate(-15deg);
+    }
+    50% {
+        transform: rotate(10deg);
+    }
+    60% {
+        transform: rotate(-5deg);
+    }
+    70% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+    .ringing {
+        animation: ring 3s ease-in-out infinite;
+        animation-delay: 1s;
+    }
+
+svg {
+    margin-left: 1rem;
+}

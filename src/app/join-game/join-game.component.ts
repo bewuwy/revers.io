@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { FormControl, FormGroup } from '@angular/forms';
 
+// TODO: add custom game rules
 
 @Component({
   selector: 'app-join-game',
