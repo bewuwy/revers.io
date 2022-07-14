@@ -132,6 +132,50 @@
         cursor: default;
     }
 
+.score-bar {
+    box-shadow: inset 0 0 5px red;
+    height: 1.5rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+}
+
+    .player-score {
+        box-shadow: inset 0 0 3px black;
+        height: 100%;
+
+        display: flex;
+        align-items: center;
+
+        transition: all 1s;
+    }
+
+        .player-score.white {
+            background-color: white;
+        }
+
+        .player-score.black {
+            background-color: black;
+        }
+
+        .player-score.player {
+            justify-content: flex-start;
+        }
+
+        .player-score.player span {
+            margin-left: .5rem;
+        }
+
+        .player-score.opponent {
+            justify-content: flex-end;
+        }
+
+        .player-score.black span {
+            color: white;
+        }
+
 .disk {
     width: 90%;
     height: 90%;

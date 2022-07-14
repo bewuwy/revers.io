@@ -57,7 +57,15 @@
 
         <div id="score">
             <h3>score</h3>
-            <p>white: {{ data.score.white }} black: {{ data.score.black }}</p>
+            <!-- <p>white: {{ data.score.white }} black: {{ data.score.black }}</p> -->
+            <div class="score-bar" *ngIf="opponent">
+                <div class="player-score player" [ngClass]="playerColor" [style.width.%]="data.score[playerColor] / (data.score[playerColor] + data.score[opponentColor]) * 100" >
+                    <span>{{ data.score[playerColor] }}</span>
+                </div>
+                <div class="player-score opponent" [ngClass]="opponentColor" [style.width.%]="data.score[opponentColor] / (data.score[playerColor] + data.score[opponentColor]) * 100" >
+                    <span>{{ data.score[opponentColor] }}</span>
+                </div>
+            </div>
         
             <p *ngIf="data.completed">game completed - <b *ngIf="won === true">you won!</b><b *ngIf="won === false">you lost!</b><b *ngIf="won === null">tie!</b></p>
         </div>

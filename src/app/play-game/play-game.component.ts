@@ -22,10 +22,11 @@ export class PlayGameComponent implements OnInit {
   online: boolean = true;
 
   opponent: { name: string, id: string };
+  opponentColor: string;
   createdDelta: string = "";
   won: boolean | null = null;
 
-  boardSize: { x: number, y: number } = { x: 8, y: 8 };
+  boardSize: { x: number, y: number } = { x: 4, y: 4 };
   board: string[][] = [];
   flip: boolean[][] = [];
   legalMove: boolean[][] = [];
@@ -264,14 +265,13 @@ export class PlayGameComponent implements OnInit {
     if (color === undefined) {
       color = this.playerColor;
     }
-    const opponentColor = color === "black" ? "white" : "black";
 
     this.flipDisk(y, x, color);
 
     let flipped = this.getFlippedDisks(y, x, color);
     for (let i = 0; i < flipped.length; i++) {
       this.flipDisk(flipped[i].y, flipped[i].x, color);
-      if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
+      if (user) { this.data.score[color]++; this.data.score[this.opponentColor]--; }
     }
  
     // update database only if move was made by a player
@@ -333,8 +333,6 @@ export class PlayGameComponent implements OnInit {
         this.legalMove[i][j] = false;
 
         if (this.board[i][j] === "") {
-          const opponentColor = this.playerColor === "black" ? "white" : "black";
-
           // check if opponent's disk is adjacent to this cell
           let opponentAdj: boolean = false;
 
@@ -359,7 +357,7 @@ export class PlayGameComponent implements OnInit {
               
               if (!(dx === 0 && dy === 0)) {
                 // adjacent cell
-                if (this.board[newY][newX] === opponentColor) {
+                if (this.board[newY][newX] === this.opponentColor) {
                   opponentAdj = true;
                   break;
                 }
@@ -408,8 +406,6 @@ export class PlayGameComponent implements OnInit {
 
   ngOnInit(): void {
     this.createOnline$().subscribe((isOnline:any) => {
-      console.log('online?', isOnline);
-
       if (this.online && !isOnline) {
         console.log("You went offline!"); // TODO: toast alert
       }
@@ -491,6 +487,8 @@ export class PlayGameComponent implements OnInit {
       // get opponent
       this.opponent = this.data.players.find((player:any) => player.id !== this.auth.currentUser?.uid);
       this.playerColor = playerIds.indexOf(this.auth.currentUser?.uid) === 0 ? "white" : "black";
+      // get opponent's color
+      this.opponentColor = this.playerColor === "black" ? "white" : "black";
 
       // check if current user won
       if (this.data.winner === "tie") {
