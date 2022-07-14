@@ -5,9 +5,10 @@ import { PlayGameComponent } from './play-game/play-game.component';
 import { JoinGameComponent } from './join-game/join-game.component';
 import { InviteComponent } from './invite/invite.component';
 import { SignInComponent } from './sign-in/sign-in.component';
+import { IndexComponent } from './index/index.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/join', pathMatch: 'full' },
+  { path: '', component: IndexComponent },
   { path: 'account', component: AccountComponent },
   { path: "login", component: SignInComponent },
   { path: 'join', component: JoinGameComponent },

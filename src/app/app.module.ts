@@ -14,6 +14,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { ClipboardModule } from 'ngx-clipboard';
 import { InviteComponent } from './invite/invite.component';
+import { IndexComponent } from './index/index.component';
 
 
 @NgModule({
@@ -23,7 +24,8 @@ import { InviteComponent } from './invite/invite.component';
     AccountComponent,
     JoinGameComponent,
     SignInComponent,
-    InviteComponent
+    InviteComponent,
+    IndexComponent
   ],
   imports: [
     BrowserModule,

@@ -1,29 +1,34 @@
+#nav-title {
+    margin-top: 3vh;
+    margin-bottom: 0;
+}
+
 nav {
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
-nav > * {
-    margin-right: 1rem;
-}
-
-nav .account-div {
-    display: flex;
-    flex-direction: row;
-
-    margin-right: 0;
-    margin-left: auto;
-}
-
-    nav .account-div > *:not(:last-child) {
-        margin-right: .5rem;
+    nav > * {
+        margin-right: 1rem;
     }
 
-nav button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    nav .account-div {
+        display: flex;
+        flex-direction: row;
 
-    font-weight: bold;
-}
+        margin-right: 0;
+        margin-left: auto;
+    }
+
+        nav .account-div > *:not(:last-child) {
+            margin-right: .5rem;
+        }
+
+    nav button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-weight: bold;
+    }
