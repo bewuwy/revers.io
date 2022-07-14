@@ -18,6 +18,10 @@
         margin-left: auto;
     }
 
+#game-info p {
+    margin-top: 0;
+}
+
 #board {
     display: flex;
     flex-direction: column;
@@ -31,8 +35,13 @@
 }
 
     #board-container {
-        align-self: center;
+        /* align-self: center; */
+        width: max-content;
     }
+
+        #board-container h3 {
+            margin-top: 0;
+        }
 
     .disabled {
         pointer-events: none;
@@ -177,6 +186,6 @@
         animation-delay: 1s;
     }
 
-svg {
+p > svg {
     margin-left: 1rem;
 }

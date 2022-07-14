@@ -3,6 +3,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
+import { fromEvent, map, merge, Observable, Observer } from 'rxjs';
 
 // TODO: play without an account
 // TODO: check if move is legal
@@ -18,8 +19,9 @@ export class PlayGameComponent implements OnInit {
   gameId: string = "";
   data: any;
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
+  online: boolean = true;
 
-  opponent: { name: string, id: string } = { name: "", id: "" };
+  opponent: { name: string, id: string };
   createdDelta: string = "";
   won: boolean | null = null;
 
@@ -35,6 +37,16 @@ export class PlayGameComponent implements OnInit {
   constructor(private db: Firestore, private auth: Auth, 
               private route: ActivatedRoute, private router: Router,
               @Inject(DOCUMENT) private document: any) {  }
+
+  createOnline$() {
+    return merge(
+      fromEvent(window, 'offline').pipe(map(() => false)),
+      fromEvent(window, 'online').pipe(map(() => true)),
+      new Observable((sub: Observer<boolean>) => {
+        sub.next(navigator.onLine);
+        sub.complete();
+      }));
+  }
 
   getInvite(gameId: string) {
     return this.domain + "/invite/" + gameId;
@@ -67,9 +79,6 @@ export class PlayGameComponent implements OnInit {
           const end = x-1;
 
           for (let j = start; j <= end; j++) {
-            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
-
-            // this.flipDisk(y, j, color);
             flipped.push({y: y, x: j});
           }
           break;
@@ -87,9 +96,6 @@ export class PlayGameComponent implements OnInit {
           const end = i-1;
 
           for (let j = start; j <= end; j++) {
-            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
-            
-            // this.flipDisk(y, j, color);
             flipped.push({y: y, x: j});
           }
           break;
@@ -107,9 +113,6 @@ export class PlayGameComponent implements OnInit {
           const end = y-1;
 
           for (let j = start; j <= end; j++) {
-            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
-            
-            // this.flipDisk(j, x, color);
             flipped.push({y: j, x: x});
           }
           break;
@@ -127,9 +130,6 @@ export class PlayGameComponent implements OnInit {
           const end = i-1;
 
           for (let j = start; j <= end; j++) {
-            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--; }
-            
-            // this.flipDisk(j, x, color);
             flipped.push({y: j, x: x});
           }
           break;
@@ -155,9 +155,6 @@ export class PlayGameComponent implements OnInit {
             const x_ = x-j;
             const y_ = y-j;
 
-            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
-
-            // this.flipDisk(y_, x_, color);
             flipped.push({y: y_, x: x_});
           }
           break;
@@ -182,9 +179,6 @@ export class PlayGameComponent implements OnInit {
             const x_ = x+j;
             const y_ = y-j;
 
-            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
-
-            // this.flipDisk(y_, x_, color);
             flipped.push({y: y_, x: x_});
           }
           break;
@@ -209,9 +203,6 @@ export class PlayGameComponent implements OnInit {
             const x_ = x-j;
             const y_ = y+j;
 
-            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
-            
-            // this.flipDisk(y_, x_, color);
             flipped.push({y: y_, x: x_});
           }
           break;
@@ -236,9 +227,6 @@ export class PlayGameComponent implements OnInit {
             const x_ = x+j;
             const y_ = y+j;
 
-            // if (user) { this.data.score[color]++; this.data.score[opponentColor]--;}
-            
-            // this.flipDisk(y_, x_, color);
             flipped.push({y: y_, x: x_});
           }
           break;
@@ -296,12 +284,7 @@ export class PlayGameComponent implements OnInit {
         this.getWinner();
       }
 
-      const gamesCollection = collection(this.db, 'game');
-      const gameDoc = doc(gamesCollection, this.gameId);
-
-      setDoc(gameDoc, this.data).then(() => {
-        console.log("move saved");
-      });
+      this.pushTurn();
     }
   }
 
@@ -326,8 +309,18 @@ export class PlayGameComponent implements OnInit {
 
     this.data.moves.push({ x: -1, y: -1, color: this.playerColor });
 
-    updateDoc(doc(collection(this.db, 'game'), this.gameId), {
-      moves: this.data.moves,
+    this.pushTurn();
+  }
+
+  // push data to firebase
+  pushTurn() {
+    setDoc(doc(collection(this.db, 'game'), this.gameId), this.data).then(() => {
+      console.log("turn synced");
+      this.online = true;
+    }).catch((e) => {
+      // disconnected error (probably)
+      console.log("You got disconnected from the servers...")
+      console.log(e);
     });
   }
 
@@ -414,6 +407,20 @@ export class PlayGameComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.createOnline$().subscribe((isOnline:any) => {
+      console.log('online?', isOnline);
+
+      if (this.online && !isOnline) {
+        console.log("You went offline!"); // TODO: toast alert
+      }
+      
+      if (!this.online && isOnline) {
+        console.log("You went online!"); // TODO: toast alert
+      }
+
+      this.online = isOnline;
+    });
+
     this.domain = this.document.location.host;
     this.gameId = this.route.snapshot.paramMap.get("id") || "";
     
@@ -441,7 +448,8 @@ export class PlayGameComponent implements OnInit {
       }
 
       // check if current user in game
-      if (this.data.players.indexOf(this.auth.currentUser?.uid) === -1) {
+      const playerIds = this.data.players.map((player:any) => player.id);
+      if (playerIds.indexOf(this.auth.currentUser?.uid) === -1) {
         this.valid.valid = false;
         this.valid.reason = "You are not in this game";
 
@@ -464,7 +472,7 @@ export class PlayGameComponent implements OnInit {
         if (i > 0 && this.data.moves[i-1].x === -1 && move.x === -1) {
           this.getWinner();
 
-          setDoc(gameDoc, this.data);
+          this.pushTurn();
           break;
         }
 
@@ -481,9 +489,8 @@ export class PlayGameComponent implements OnInit {
       this.localMoves = this.data.moves;
 
       // get opponent
-      this.opponent.name = this.data.playerNames.find((p:string) => p !== this.auth.currentUser?.displayName);
-      this.opponent.id = this.data.players.find((p:string) => p !== this.auth.currentUser?.uid);
-      this.playerColor = this.data.players.indexOf(this.auth.currentUser?.uid) === 0 ? "black" : "white";
+      this.opponent = this.data.players.find((player:any) => player.id !== this.auth.currentUser?.uid);
+      this.playerColor = playerIds.indexOf(this.auth.currentUser?.uid) === 0 ? "white" : "black";
 
       // check if current user won
       if (this.data.winner === "tie") {
@@ -493,7 +500,7 @@ export class PlayGameComponent implements OnInit {
         this.won = this.data.winner === this.auth.currentUser?.uid;
       }
 
-      if (!this.data.completed) {
+      if (!this.data.status.completed) {
       
         // decide on player turn
         if (this.data.moves.length === 0) {
@@ -530,8 +537,9 @@ export class PlayGameComponent implements OnInit {
     }
 
     // remove current user from game if it has finished
-    if (this.data.completed) {
-      this.data.players.splice(this.data.players.indexOf(this.auth.currentUser?.uid), 1);
+    if (this.data.status.completed) {
+      const playerIds = this.data.players.map((player:any) => player.id);
+      this.data.players.splice(playerIds.indexOf(this.auth.currentUser?.uid), 1);
 
       // update game doc
       const gamesCollection = collection(this.db, 'game');

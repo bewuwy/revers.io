@@ -6,7 +6,7 @@
 
 <div *ngIf="user && valid.valid">
     <p *ngIf="!opponent.name">Loading invite details...</p>
-    <p *ngIf="opponent.name">You've been invited to a game with {{ opponent.name }}!</p>
+    <p *ngIf="opponent.name">You've been invited to a game with <span [title]="opponent.id">{{ opponent.name }}</span>!</p>
 
     <div id="buttons">
         <button (click)="onAccept()" [disabled]="!opponent.id" id="accept">

@@ -46,7 +46,7 @@ export class JoinGameComponent implements OnInit {
     this.createGame(open, name);
   }
 
-  // create a new game
+  // create a new game // TODO: add custom rules
   createGame(open: boolean, name: string | null) {
     const userId = this.user.uid;
     if (!userId) {
@@ -61,7 +61,7 @@ export class JoinGameComponent implements OnInit {
     let gameDoc = doc(gamesCollection, id);
     getDoc(gameDoc).then(docSnapshot => {
       if (docSnapshot.exists()) {
-        console.log("game name already in use");
+        console.log("game name already in use");  // TODO: toast alert
         id = uuidv4();
       }
 
@@ -69,20 +69,21 @@ export class JoinGameComponent implements OnInit {
       gameDoc = doc(gamesCollection, id);
 
       setDoc(gameDoc, {
-        players: [userId],
-        playerNames: [this.user.displayName],
+        players: [{id: userId, name: this.user.displayName}],
+        // playerNames
         moves: [],
         score: {white: 2, black: 2},
-        completed: false,
-        open: open,
+        status: {completed: false, open: open, winner: null},
+        // completed: false,
+        // open: open,
         created: new Date(),
-        winner: null
+        // winner: null
       }).then(() => {
-        console.log("created game", id);
+        console.log("created game", id); // TODO: toast alert
         this.router.navigate(["/play", id]);
   
       }).catch((error) => {
-        console.log("error creating game", error);
+        console.log("error creating game", error);  // TODO: toast alert
       });
     });    
   }
@@ -95,7 +96,7 @@ export class JoinGameComponent implements OnInit {
     }
   }
 
-  // join a game
+  // join a game // TODO: add matchmaking
   joinGame(gameId: string) {
     const userId = this.user.uid;
     if (!userId) {
@@ -108,19 +109,23 @@ export class JoinGameComponent implements OnInit {
     const gameDoc = doc(gamesCollection, gameId);
 
     getDoc(gameDoc).then((doc) => {
-      const data = doc.data()
+      const data = doc.data();
 
-      if (data && data["players"].indexOf(userId) === -1) {
-        data["players"].push(userId);
-        data["playerNames"].push(this.user.displayName);
-        data["open"] = data["players"].length < 2;
+      if (data) {
+        const playerIds = data['players'].map(function(p:any) {return p['id'];});
 
-        setDoc(gameDoc, data).then(() => {
-          console.log("joined game", gameId);
-        });
-      }
-      else {
-        console.log("already joined game", gameId);
+        if (playerIds.indexOf(userId) === -1) {
+          data["players"].push({id: userId, name: this.user.displayName});
+          // data["playerNames"].push(this.user.displayName);
+          data['status']["open"] = data["players"].length < 2;
+  
+          setDoc(gameDoc, data).then(() => {
+            console.log("joined game", gameId);  // TODO: toast alert
+          });
+        }
+        else {
+          console.log("already joined game", gameId);
+        }
       }
 
       // navigate to play game

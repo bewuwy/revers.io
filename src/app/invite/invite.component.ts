@@ -29,12 +29,10 @@ export class InviteComponent implements OnInit {
       }
 
       const players = gameData["players"];
-      const playerNames = gameData["playerNames"];
 
-      players.push(this.user.uid);
-      playerNames.push(this.user.displayName);
+      players.push({id: this.user.uid, name: this.user.displayName});
 
-      updateDoc(gameDoc, { players, playerNames }).then(() => {
+      updateDoc(gameDoc, { players: players }).then(() => {
         // redirect to game
         this.router.navigate(["/play", this.gameId]);
       });
@@ -42,7 +40,7 @@ export class InviteComponent implements OnInit {
   }
 
   onDecline() {
-    alert("You declined the invite");
+    alert("You declined the invite");  // TODO: toast alert
     // redirect to index
     this.router.navigate(["/"]);
   }
@@ -69,13 +67,12 @@ export class InviteComponent implements OnInit {
       if (gameData) {
         const opponent:any = gameData["players"].find((p:any) => p.id !== this.user.uid);
 
-        if (opponent === this.user.uid) {
+        if (opponent.id === this.user.uid) {
           this.valid = {valid: false, reason: "You cannot invite yourself"};
           return;
         }
 
-        this.opponent.name = opponent;
-        this.opponent.id = opponent;
+        this.opponent = opponent;
 
         // check if game is full
         if (gameData["players"].length >= 2) {
