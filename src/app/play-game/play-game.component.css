@@ -8,14 +8,23 @@
 
 #invite-container {
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     justify-content: center;
     width: 100%;
+
+    margin-bottom: .5rem;
 }
 
-    #invite-container button {
-        margin-left: auto;
+    @media (min-width: 1024px) {
+        #invite-container {
+            flex-direction: row;
+            align-items: center;
+        }
+
+        #invite-container button {
+            margin-left: auto;
+        }
     }
 
 #game-info p {
@@ -27,17 +36,42 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: fit-content;
-    height: 100%;
     border: 5px solid black;
 
     position: relative;
+
+    width: 100%;
+    aspect-ratio: 1/1;
+    align-self: center;
 }
 
     #board-container {
         /* align-self: center; */
-        width: max-content;
+        width: 100%;
+        aspect-ratio: 1/1;
+
+        display: flex;
+        flex-direction: column;
     }
+
+        @media (min-width: 768px) {
+            #board-container {
+                width: 70%;
+                align-self: center;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            #board-container {
+                width: 60%;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            #board-container {
+                width: 55%;
+            }
+        }
 
         #board-container h3 {
             margin-top: 0;
@@ -66,15 +100,17 @@
     .row {
         display: flex;
         flex-direction: row;
-        align-items: center;
+        align-items: stretch;
         justify-content: center;
+        
         width: 100%;
-        height: 100%;
+        height: auto;
+        flex-grow: 1;
     }
 
     #board .cell {
-        width: 50px;
-        height: 50px;
+        width: 100%;
+        height: 100%;
         border: 1px solid white;
         background-color: #A2C3A4;
         font-size: 30px;

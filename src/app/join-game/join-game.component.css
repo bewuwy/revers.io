@@ -43,8 +43,7 @@ button {
 
 #join-container {
     display: flex;
-    flex-direction: row;
-    /* align-items: center; */
+    flex-direction: column;
     justify-content: center;
     width: 100%;
 
@@ -52,14 +51,23 @@ button {
 }
 
     .join {
-        width: 50%;
-        /* padding: 0% 2.5%; */
+        width: 100%;
+        flex-basis: 100%;
 
         display: flex;
         flex-direction: column;
         align-items: center;
+    }
 
-        /* border: 1px solid red; */
+    @media (min-width: 1024px) {
+        #join-container {
+            flex-direction: row;
+        }
+
+        .join {
+            width: 50%;
+            flex-basis: 50%;
+        }
     }
 
     .join h3 {
@@ -84,11 +92,6 @@ button {
 
     #create-submit input[type="submit"] {
         flex-grow: 0;
-
-        /* align-self: center;
-
-        margin: auto;
-        margin-left: 0; */
 
         width: fit-content;
     }

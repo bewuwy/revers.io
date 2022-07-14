@@ -25,7 +25,7 @@ export class PlayGameComponent implements OnInit {
   createdDelta: string = "";
   won: boolean | null = null;
 
-  boardSize: { x: number, y: number } = { x: 4, y: 4 };
+  boardSize: { x: number, y: number } = { x: 8, y: 8 };
   board: string[][] = [];
   flip: boolean[][] = [];
   legalMove: boolean[][] = [];
