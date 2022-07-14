@@ -1,5 +1,7 @@
 #nav-title {
     margin: 0;
+    width: fit-content;
+    cursor: pointer;
 }
 
 nav {

@@ -78,30 +78,43 @@ button {
 
 #create-submit {
     display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
     #create-submit input[type="submit"] {
         flex-grow: 0;
 
-        margin-left: 5%;
+        /* align-self: center;
+
+        margin: auto;
+        margin-left: 0; */
+
         width: fit-content;
     }
 
-#create-open {
-    display: flex;
+    #create-open {
+        display: flex;
 
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-}
+        justify-self: flex-start;
+        margin-right: auto;
 
-    #create-open > * {
-        margin: 0;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
     }
 
-    #create-open input[type="checkbox"] {
-        margin-left: 10%;
-    }
+        #create-open > * {
+            margin: 0;
+        }
+
+        #create-open label {
+            align-self: center;
+        }
+
+        #create-open .switch {
+            margin-left: 8px;
+        }
 
 form {
     width: 100%;

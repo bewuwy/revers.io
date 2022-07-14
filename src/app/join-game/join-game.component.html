@@ -23,7 +23,12 @@
             <h3>Join a private game</h3>
             <form (ngSubmit)="onJoinPrivateGame()" [formGroup]="joinGameForm">
                 <label for="gameName">game name</label>
-                <input type="text" id="gameName" name="gameName" formControlName="gameId" autocomplete="off" />
+                <input type="text" id="gameName" name="gameName" formControlName="gameId" autocomplete="off" required />
+
+                <div *ngIf="joinGameForm.controls['gameId'].invalid && (joinGameForm.dirty || joinGameForm.touched || joinGameForm.controls['gameId'].dirty || joinGameForm.controls['gameId'].touched)" class="alert">
+                    <span *ngIf="joinGameForm.controls['gameId'].errors!['required']">*game name is required</span>
+                </div>
+
                 <input type="submit" value="join game">
             </form>
         </div>
@@ -32,13 +37,18 @@
     <div id="create">
         <h3>Create a new game</h3>
         <form (ngSubmit)="onCreateGame();" [formGroup]="gameForm">
-            <label for="gameName">game name</label>
+            <label for="gameName">game name (optional)</label>
             <input type="text" id="gameName" name="gameName" formControlName="gameName" autocomplete="off" />
 
             <div id="create-submit">
                 <div id="create-open">
-                    <label for="gameOpen">open</label>
-                    <input type="checkbox" id="gameOpen" name="gameOpen" formControlName="gameOpen" />
+                    <label for="gameOpen" *ngIf="openGame">public game</label>
+                    <label for="gameOpen" *ngIf="!openGame">private game</label>
+                    
+                    <label class="switch">
+                        <input type="checkbox" id="gameOpen" formControlName="gameOpen" [(ngModel)]="openGame" />
+                        <span class="slider round"></span>
+                    </label>
                 </div>
 
                 <input type="submit" value="create game" />

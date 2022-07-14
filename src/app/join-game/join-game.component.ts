@@ -26,6 +26,8 @@ export class JoinGameComponent implements OnInit {
   refreshRoll: boolean = false;
   refreshAllow: boolean = true;
 
+  openGame: boolean = true;
+
   user: any;
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
 
@@ -85,6 +87,8 @@ export class JoinGameComponent implements OnInit {
   }
 
   onJoinPrivateGame() {
+    this.joinGameForm.markAsTouched();
+
     if (this.joinGameForm.value.gameId) {
       this.joinGame(this.joinGameForm.value.gameId);
     }

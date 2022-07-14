@@ -397,6 +397,9 @@ export class PlayGameComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    if (!this.data) {
+      return;
+    }
   
     // delete game if there is only one player left
     if (this.data.players.length === 1) {
