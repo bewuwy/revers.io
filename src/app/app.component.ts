@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { onAuthStateChanged, Auth, User, signOut } from '@angular/fire/auth';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +13,9 @@ export class AppComponent {
   title = 'revers_io_angular';
   user: User | null = null;
 
-  constructor(private auth: Auth, private router: Router) {
+  constructor(private auth: Auth, private router: Router,
+              private toastr: ToastrService) {
+
     onAuthStateChanged(this.auth, (user) => {
       if (user) {
         this.user = user;
@@ -32,6 +35,7 @@ export class AppComponent {
     else {
       // logout user
       signOut(this.auth);
+      this.toastr.info("Signed out");
       return;
     }
   }

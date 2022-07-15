@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, Auth, signOut, updateProfile } from '@angular/fire/auth';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 // TODO: login through google
 
@@ -24,7 +25,9 @@ export class SignInComponent implements OnInit {
     password: new FormControl('', {nonNullable: true})
   });
 
-  constructor(private auth: Auth, private router: Router) { 
+  constructor(private auth: Auth, private router: Router,
+              private toastr: ToastrService) {
+                
     onAuthStateChanged(this.auth, (user) => {
       this.logged = user !== null;
     });
@@ -72,7 +75,7 @@ export class SignInComponent implements OnInit {
 
   signIn(email: string, password: string) {
     signInWithEmailAndPassword(this.auth, email, password).then((user) => {
-      alert("Logged in successfully!");  // TODO: change alert to something more user-friendly
+      this.toastr.success("Signed in successfully");
 
       // navigate to join-game page
       this.router.navigate(['join']);

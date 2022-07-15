@@ -4,6 +4,7 @@ import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orde
 import { Router } from '@angular/router';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { FormControl, FormGroup } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 // TODO: add custom game rules
 
@@ -32,7 +33,8 @@ export class JoinGameComponent implements OnInit {
   user: any;
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
 
-  constructor(private db: Firestore, private auth: Auth, private router: Router) { }
+  constructor(private db: Firestore, private auth: Auth, 
+              private router: Router, private toastr: ToastrService) { }
 
   onCreateGame() {
     console.log(this.gameForm.value);
@@ -61,7 +63,8 @@ export class JoinGameComponent implements OnInit {
     let gameDoc = doc(gamesCollection, id);
     getDoc(gameDoc).then(docSnapshot => {
       if (docSnapshot.exists()) {
-        console.log("game name already in use");  // TODO: toast alert
+        console.log("game name already in use");
+        this.toastr.error("Game name already in use, picking a random one");
         id = uuidv4();
       }
 
@@ -79,11 +82,13 @@ export class JoinGameComponent implements OnInit {
         created: new Date(),
         // winner: null
       }).then(() => {
-        console.log("created game", id); // TODO: toast alert
+        console.log("created game", id);
+        this.toastr.success("Game created " + id);
         this.router.navigate(["/play", id]);
   
       }).catch((error) => {
-        console.log("error creating game", error);  // TODO: toast alert
+        console.log("error creating game", error);
+        this.toastr.error("Error creating game! Try again.");
       });
     });    
   }
@@ -120,7 +125,8 @@ export class JoinGameComponent implements OnInit {
           data['status']["open"] = data["players"].length < 2;
   
           setDoc(gameDoc, data).then(() => {
-            console.log("joined game", gameId);  // TODO: toast alert
+            console.log("joined game", gameId);
+            this.toastr.success("Joined game " + gameId);
           });
         }
         else {

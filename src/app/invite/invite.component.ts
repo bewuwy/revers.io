@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { Firestore, collection, doc, getDoc, updateDoc } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-invite',
@@ -16,7 +17,8 @@ export class InviteComponent implements OnInit {
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
 
   constructor(private db: Firestore, private auth: Auth,
-              private route: ActivatedRoute, private router: Router, ) { }
+              private route: ActivatedRoute, private router: Router, 
+              private toastr: ToastrService) { }
 
   onAccept() {
     // add user to game
@@ -40,7 +42,7 @@ export class InviteComponent implements OnInit {
   }
 
   onDecline() {
-    alert("You declined the invite");  // TODO: toast alert
+    this.toastr.error("Declined the invite from " + this.opponent.name);
     // redirect to index
     this.router.navigate(["/"]);
   }
