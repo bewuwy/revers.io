@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { onAuthStateChanged, Auth, User, signOut } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,7 @@ export class AppComponent {
   user: User | null = null;
 
   constructor(private auth: Auth, private router: Router,
+              private titleService:Title,
               private toastr: ToastrService) {
 
     onAuthStateChanged(this.auth, (user) => {
@@ -26,6 +28,8 @@ export class AppComponent {
         this.user = null;
       }
     });
+
+    titleService.setTitle("revers.io");
   }
 
   onLoginClick() {

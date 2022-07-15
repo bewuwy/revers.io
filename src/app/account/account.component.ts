@@ -3,6 +3,7 @@ import { Auth, User, onAuthStateChanged } from '@angular/fire/auth';
 import { Firestore, collection, doc, query, where, getDocs } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 
+// TODO: game statistics
 
 @Component({
   selector: 'app-account',
