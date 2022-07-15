@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid, customAlphabet } from 'nanoid';
 import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit } from "@angular/fire/firestore"; 
 import { Router } from '@angular/router';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
@@ -14,6 +14,8 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./join-game.component.css']
 })
 export class JoinGameComponent implements OnInit {
+  GAME_ID_LENGTH: number = 8;
+  nanoid: any = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', this.GAME_ID_LENGTH);
 
   gameForm = new FormGroup({
     gameOpen: new FormControl(true, {nonNullable: true}),
@@ -57,7 +59,7 @@ export class JoinGameComponent implements OnInit {
     }
 
     const gamesCollection = collection(this.db, 'game');
-    let id: string = name || uuidv4();
+    let id: string = name || this.nanoid();
 
     // check if custom game name is already in use
     let gameDoc = doc(gamesCollection, id);
@@ -65,7 +67,7 @@ export class JoinGameComponent implements OnInit {
       if (docSnapshot.exists()) {
         console.log("game name already in use");
         this.toastr.error("Game name already in use, picking a random one");
-        id = uuidv4();
+        id = this.nanoid();
       }
 
       // create game
@@ -83,7 +85,7 @@ export class JoinGameComponent implements OnInit {
         // winner: null
       }).then(() => {
         console.log("created game", id);
-        this.toastr.success("Game created " + id);
+        this.toastr.success("Game " + id + " created");
         this.router.navigate(["/play", id]);
   
       }).catch((error) => {
@@ -121,7 +123,6 @@ export class JoinGameComponent implements OnInit {
 
         if (playerIds.indexOf(userId) === -1) {
           data["players"].push({id: userId, name: this.user.displayName});
-          // data["playerNames"].push(this.user.displayName);
           data['status']["open"] = data["players"].length < 2;
   
           setDoc(gameDoc, data).then(() => {
