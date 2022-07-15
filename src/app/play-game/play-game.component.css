@@ -69,7 +69,7 @@
 
         @media (min-width: 1280px) {
             #board-container {
-                width: 55%;
+                width: 50%;
             }
         }
 
@@ -263,7 +263,7 @@
 
     .ringing {
         animation: ring 3s ease-in-out infinite;
-        animation-delay: 1s;
+        animation-delay: .7s;
     }
 
 p > svg {

@@ -15,6 +15,8 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
 import { ClipboardModule } from 'ngx-clipboard';
 import { InviteComponent } from './invite/invite.component';
 import { IndexComponent } from './index/index.component';
+import { ToastrModule } from 'ngx-toastr';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 
 @NgModule({
@@ -35,7 +37,12 @@ import { IndexComponent } from './index/index.component';
     provideAuth(() => getAuth()),
     FormsModule,
     ReactiveFormsModule,
-    ClipboardModule
+    ClipboardModule,
+    BrowserAnimationsModule, // required animations module
+    ToastrModule.forRoot({
+      positionClass: 'toast-bottom-center',
+      timeOut: 2500,
+    }), // ToastrModule added
   ],
   providers: [],
   bootstrap: [AppComponent]

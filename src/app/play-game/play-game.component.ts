@@ -4,9 +4,9 @@ import { Auth } from '@angular/fire/auth';
 import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { fromEvent, map, merge, Observable, Observer } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 // TODO: play without an account
-// TODO: check if move is legal
 
 @Component({
   selector: 'app-play-game',
@@ -35,8 +35,15 @@ export class PlayGameComponent implements OnInit {
   playerTurn: boolean;
   localMoves: { x: number, y: number, color: string }[] = [];
 
+  // audio effects
+  bellRing:HTMLAudioElement = new Audio();
+  winEffect: HTMLAudioElement = new Audio();
+  loseEffect: HTMLAudioElement = new Audio();
+
+  // constructor
   constructor(private db: Firestore, private auth: Auth, 
               private route: ActivatedRoute, private router: Router,
+              public toastr: ToastrService,
               @Inject(DOCUMENT) private document: any) {  }
 
   createOnline$() {
@@ -405,23 +412,42 @@ export class PlayGameComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // online checker
     this.createOnline$().subscribe((isOnline:any) => {
       if (this.online && !isOnline) {
-        console.log("You went offline!"); // TODO: toast alert
+        this.toastr.error("You went offline!", "", {disableTimeOut: true, tapToDismiss: false});
       }
       
       if (!this.online && isOnline) {
-        console.log("You went online!"); // TODO: toast alert
+        this.toastr.clear();
+        this.toastr.success("You went online!");
       }
 
       this.online = isOnline;
     });
 
+    // get domain name and game id
     this.domain = this.document.location.host;
     this.gameId = this.route.snapshot.paramMap.get("id") || "";
     
     this.startGame();
 
+    // initialize sound notifications
+    this.bellRing.src = "/assets/sound/bell-ding.wav";
+    this.bellRing.volume = 0.4;
+    this.bellRing.playbackRate = 0.5;
+    this.bellRing.load();
+
+    this.winEffect.src = "/assets/sound/win.wav";
+    this.winEffect.volume = 0.4;
+    this.winEffect.load();
+
+    this.loseEffect.src = "/assets/sound/lose.wav";
+    this.loseEffect.volume = 0.4;
+    this.loseEffect.playbackRate = 0.5;
+    this.loseEffect.load();
+
+    // initialize database
     const gamesCollection = collection(this.db, 'game');
     const gameDoc = doc(gamesCollection, this.gameId);
 
@@ -474,6 +500,11 @@ export class PlayGameComponent implements OnInit {
 
         // if move is a skip move
         if (move.x === -1 && move.y === -1) {
+          // if the move was the last move, inform user
+          if (i === this.data.moves.length-1 && move.color === this.opponentColor) {
+            this.toastr.info("Opponent couldn't make a move!", "Your turn!", {timeOut: 5000});
+          }
+
           continue;
         }
 
@@ -485,7 +516,12 @@ export class PlayGameComponent implements OnInit {
       this.localMoves = this.data.moves;
 
       // get opponent
-      this.opponent = this.data.players.find((player:any) => player.id !== this.auth.currentUser?.uid);
+      const opponent = this.data.players.find((player:any) => player.id !== this.auth.currentUser?.uid);
+      if (opponent && !this.opponent) {
+        this.toastr.success(opponent.name + " joined the game!");
+      }
+      this.opponent = opponent;
+
       this.playerColor = playerIds.indexOf(this.auth.currentUser?.uid) === 0 ? "white" : "black";
       // get opponent's color
       this.opponentColor = this.playerColor === "black" ? "white" : "black";
@@ -496,6 +532,14 @@ export class PlayGameComponent implements OnInit {
       }
       else {
         this.won = this.data.winner === this.auth.currentUser?.uid;
+        if (this.data.status.completed && this.won) {
+          this.toastr.info("You won! 🎉", "", {timeOut: 5000});
+          this.winEffect.play();
+        }
+        else if (this.data.status.completed) {
+          this.toastr.info("You lost! 😥", "", {timeOut: 5000});
+          this.loseEffect.play();
+        }
       }
 
       // get game's creation date
@@ -503,7 +547,7 @@ export class PlayGameComponent implements OnInit {
       this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format    
 
       if (this.data && !this.data.status.completed) {
-        console.log(this.data);
+        // console.log(this.data);
       
         // decide on player turn
         if (this.data.moves.length === 0) {
@@ -514,12 +558,28 @@ export class PlayGameComponent implements OnInit {
           this.playerTurn = this.data.moves[this.data.moves.length - 1].color !== this.playerColor;
         }
 
-        // get legal moves
-        let legalMovesN = this.getLegalMoves();
-        if (this.playerTurn && legalMovesN === 0) {
-          alert("No legal moves, skipping turn");
-          this.skipTurn();
+        // current player's turn
+        if (this.playerTurn) {  
+          // get legal moves
+          let legalMovesN = this.getLegalMoves();
+
+          if (legalMovesN === 0) {
+            // skip move after a second
+            setTimeout(() => {
+              this.toastr.warning("You have no legal moves", "Skipping your turn!", {timeOut: 5000});
+  
+              this.skipTurn();
+            }, 1000);
+          }
+          else if (this.data.players.length > 1) {
+            setTimeout(() => {
+              // notification bell
+              this.bellRing.play();
+            }, 700);
+          }
         }
+
+        
       }
 
       // console.log("data: ", doc.data());
