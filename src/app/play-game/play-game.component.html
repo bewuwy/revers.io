@@ -4,12 +4,12 @@
 
 <ng-template #dataExists>
     <div id="game-info">
-        <div *ngIf="opponent; then opponentExists else opponentNotExists"></div>
-        <ng-template #opponentExists>
+        <div *ngIf="opponent">
             <p title="{{ opponent.id }}">playing against {{ opponent.name }}</p>
             <p>you are playing as <b>{{ playerColor }}</b></p>
-        </ng-template>
-        <ng-template #opponentNotExists>
+        </div>
+
+        <div *ngIf="!opponent && !data.status.completed">
             <div id="invite-container">
                 <p class="has-svg">
                     waiting for an opponent...
@@ -22,7 +22,7 @@
                     invite to game
                 </button>
             </div>
-        </ng-template>
+        </div>
         <p>game created {{ createdDelta }} ago</p>
     </div>
 
@@ -30,7 +30,8 @@
         <h3>board</h3>
 
         <div id="board" #boardDiv [class.disabled]="!opponent || !playerTurn">
-            <div *ngIf="!opponent" id="curtain"><span>waiting for an opponent...</span></div>
+            <div *ngIf="!opponent && !data.status.completed" id="curtain"><span>waiting for an opponent...</span></div>
+
             <div class="row" *ngFor="let item of [].constructor(boardSize.y); let i = index"
                  attr.data-row="{{ i }}">
                 <div class="cell" *ngFor="let item_ of [].constructor(boardSize.x); let j = index"

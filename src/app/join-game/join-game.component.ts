@@ -78,7 +78,8 @@ export class JoinGameComponent implements OnInit {
         // playerNames
         moves: [],
         score: {white: 2, black: 2},
-        status: {completed: false, open: open, winner: null},
+        status: {completed: false, open: open},
+        winner: null,
         // completed: false,
         // open: open,
         created: new Date(),

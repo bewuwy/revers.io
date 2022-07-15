@@ -1,10 +1,13 @@
 <h3>revers.io invite</h3>
 
-<div *ngIf="user === null">
-    <p>You need to be logged in to accept a game invite!</p>
+<div *ngIf="valid.valid && user === null">
+    <p>Join as:</p>
+    <form>
+        <input type="text" name="tempName" [(ngModel)]="tempName" placeholder="Guest" >
+    </form>
 </div>
 
-<div *ngIf="user && valid.valid">
+<div *ngIf="valid.valid">
     <p *ngIf="!opponent.name">Loading invite details...</p>
     <p *ngIf="opponent.name">You've been invited to a game with <span [title]="opponent.id">{{ opponent.name }}</span>!</p>
 
@@ -24,7 +27,7 @@
     </div>
 </div>
 
-<div *ngIf="user && !valid.valid">
+<div *ngIf="!valid.valid">
     <p>Invalid invite!</p>
     <p>{{ valid.reason }}</p>
 </div>

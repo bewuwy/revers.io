@@ -3,6 +3,7 @@ import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { Firestore, collection, doc, getDoc, updateDoc } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { nanoid } from 'nanoid';
 
 @Component({
   selector: 'app-invite',
@@ -10,9 +11,14 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./invite.component.css']
 })
 export class InviteComponent implements OnInit {
+  gameData: any;
+
   gameId: string = "";
   opponent: { name: string, id: string } = { name: "", id: "" };
   user: any;
+
+  tempName: string;
+  // tempId: string;  // ALERT: don't save guest id in local storage, it can be changed by user
 
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
 
@@ -24,21 +30,37 @@ export class InviteComponent implements OnInit {
     // add user to game
     const gameDoc = doc(collection(this.db, "game"), this.gameId);
 
-    getDoc(gameDoc).then(game => {
-      const gameData = game.data();
-      if (!gameData) {
+
+    // getDoc(gameDoc).then(game => {
+      // const gameData = game.data();
+      if (!this.gameData) {
         return;
       }
 
-      const players = gameData["players"];
+      const players = this.gameData["players"];
 
-      players.push({id: this.user.uid, name: this.user.displayName});
+      if (this.user) {
+        players.push({id: this.user.uid, name: this.user.displayName });
+      }
+      else {
+        // guest
+        const guestId = "guest-" + nanoid();
+        const guestName = this.tempName || "Guest";
+
+        // set local storage
+        localStorage.setItem("guestId", guestId);
+        localStorage.setItem("guestName", guestName);
+
+        players.push({id: guestId, name: guestName });
+      }
+
+      console.log(players);
 
       updateDoc(gameDoc, { players: players }).then(() => {
         // redirect to game
         this.router.navigate(["/play", this.gameId]);
       });
-    });
+    // });
   }
 
   onDecline() {
@@ -57,6 +79,10 @@ export class InviteComponent implements OnInit {
         this.user = user;
       }
       else {
+        // get temp user data
+        // this.tempId = localStorage.getItem("guestId") || "";
+        this.tempName = localStorage.getItem("guestName") || "";
+
         this.user = null;
       }
     });
@@ -65,24 +91,25 @@ export class InviteComponent implements OnInit {
     const gameDoc = doc(collection(this.db, "game"), this.gameId);
 
     getDoc(gameDoc).then(game => {
-      const gameData = game.data();
-      if (gameData) {
-        const opponent:any = gameData["players"].find((p:any) => p.id !== this.user.uid);
+      this.gameData = game.data();
 
-        if (opponent.id === this.user.uid) {
-          this.valid = {valid: false, reason: "You cannot invite yourself"};
-          return;
-        }
-
-        this.opponent = opponent;
-
+      if (this.gameData) {
         // check if game is full
-        if (gameData["players"].length >= 2) {
+        if (this.gameData["players"].length >= 2) {
           this.valid.valid = false;
           this.valid.reason = "Game is full";
         } else {
           this.valid.valid = true;
         }
+
+        const opponent:any = this.gameData["players"][0]; //.find((p:any) => p.id !== this.user.uid);
+
+        if (this.user && opponent.id === this.user.uid) {
+          this.valid = {valid: false, reason: "You cannot invite yourself"};
+          return;
+        }
+
+        this.opponent = opponent;
       }
       else {
         this.valid.valid = false;

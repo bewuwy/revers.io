@@ -21,10 +21,13 @@ export class PlayGameComponent implements OnInit {
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
   online: boolean = true;
 
+  user: any;
+
   opponent: { name: string, id: string };
   opponentColor: string;
   createdDelta: string = "";
   won: boolean | null = null;
+  resultShown: boolean = false;
 
   boardSize: { x: number, y: number } = { x: 4, y: 4 };
   board: string[][] = [];
@@ -288,27 +291,40 @@ export class PlayGameComponent implements OnInit {
 
       // check if game over
       if (this.data.moves.length >= (this.boardSize.x * this.boardSize.y - 4)) {
-        this.getWinner();
+        this.setWinner();
       }
 
       this.pushTurn();
     }
   }
 
-  getWinner() {
+  setWinner() {
     // check tie
     if (this.data.score["black"] === this.data.score["white"]) {
       this.won = null;
 
       this.data.winner = "tie";
-    } else {
+    } 
+    else {
 
       const winnerColor = this.data.score["black"] > this.data.score["white"] ? "black" : "white";
       this.won = this.playerColor === winnerColor;
-      this.data.winner = this.won ? this.auth.currentUser?.uid : this.opponent.id;
+      this.data.winner = this.won ? this.user?.uid : this.opponent.id;
     }
 
     this.data.status.completed = true;
+  }
+
+  getWon() {
+    if (this.data.status.completed) {
+     
+      if (this.data.winner === "tie") {
+        this.won = null;
+      }
+      else {
+        this.won = this.user.uid === this.data.winner;
+      }
+    }
   }
 
   skipTurn() {
@@ -461,17 +477,27 @@ export class PlayGameComponent implements OnInit {
         return;
       }
 
+      this.user = this.auth.currentUser;
       // check if current user logged in
-      if (!this.auth.currentUser) {
-        this.valid.valid = false;
-        this.valid.reason = "You need to log in to play";
+      if (!this.user) {
+        // check if there is a temp user
+        const tempName = localStorage.getItem("guestName");
+        const tempId = localStorage.getItem("guestId");
 
-        return;
+        if (!tempName && !tempId) {
+          this.valid.valid = false;
+          this.valid.reason = "You need to log in (or get invited) to play";
+
+          return;
+        }
+        else {
+          this.user = {'displayName': tempName, 'uid': tempId};
+        }
       }
 
       // check if current user in game
       const playerIds = this.data.players.map((player:any) => player.id);
-      if (playerIds.indexOf(this.auth.currentUser?.uid) === -1) {
+      if (playerIds.indexOf(this.user?.uid) === -1) {
         this.valid.valid = false;
         this.valid.reason = "You are not in this game";
 
@@ -492,7 +518,7 @@ export class PlayGameComponent implements OnInit {
 
         // if there were two skips in a row, end game
         if (i > 0 && this.data.moves[i-1].x === -1 && move.x === -1) {
-          this.getWinner();
+          this.setWinner();
 
           this.pushTurn();
           break;
@@ -516,27 +542,30 @@ export class PlayGameComponent implements OnInit {
       this.localMoves = this.data.moves;
 
       // get opponent
-      const opponent = this.data.players.find((player:any) => player.id !== this.auth.currentUser?.uid);
+      const opponent = this.data.players.find((player:any) => player.id !== this.user?.uid);
       if (opponent && !this.opponent) {
         this.toastr.success(opponent.name + " joined the game!");
       }
       this.opponent = opponent;
 
-      this.playerColor = playerIds.indexOf(this.auth.currentUser?.uid) === 0 ? "white" : "black";
+      this.playerColor = playerIds.indexOf(this.user?.uid) === 0 ? "white" : "black";
       // get opponent's color
       this.opponentColor = this.playerColor === "black" ? "white" : "black";
 
       // check if current user won
-      if (this.data.winner === "tie") {
-        this.won = null;
-      }
-      else {
-        this.won = this.data.winner === this.auth.currentUser?.uid;
-        if (this.data.status.completed && this.won) {
+      if (this.data.status.completed && !this.resultShown) {
+        // this.won = this.data.winner === this.user?.uid;
+        this.resultShown = true;
+        this.getWon();
+
+        if (this.won) {
           this.toastr.info("You won! 🎉", "", {timeOut: 5000});
           this.winEffect.play();
         }
-        else if (this.data.status.completed) {
+        else if (this.data.winner === "tie") {
+          this.toastr.info("It's a tie! 🤔", "", {timeOut: 5000});
+        }
+        else {
           this.toastr.info("You lost! 😥", "", {timeOut: 5000});
           this.loseEffect.play();
         }
@@ -566,7 +595,7 @@ export class PlayGameComponent implements OnInit {
           if (legalMovesN === 0) {
             // skip move after a second
             setTimeout(() => {
-              this.toastr.warning("You have no legal moves", "Skipping your turn!", {timeOut: 5000});
+              this.toastr.warning("You have no legal moves", "Skipping your turn!", {timeOut: 3000});
   
               this.skipTurn();
             }, 1000);
@@ -599,7 +628,7 @@ export class PlayGameComponent implements OnInit {
     // remove current user from game if it has finished
     if (this.data.status.completed) {
       const playerIds = this.data.players.map((player:any) => player.id);
-      this.data.players.splice(playerIds.indexOf(this.auth.currentUser?.uid), 1);
+      this.data.players.splice(playerIds.indexOf(this.user?.uid), 1);
 
       // update game doc
       const gamesCollection = collection(this.db, 'game');
