@@ -32,9 +32,9 @@
         <div id="board" #boardDiv [class.disabled]="!opponent || !playerTurn">
             <div *ngIf="!opponent && !data.status.completed" id="curtain"><span>waiting for an opponent...</span></div>
 
-            <div class="row" *ngFor="let item of [].constructor(boardSize.y); let i = index"
+            <div class="row" *ngFor="let item of [].constructor(boardSize); let i = index"
                  attr.data-row="{{ i }}">
-                <div class="cell" *ngFor="let item_ of [].constructor(boardSize.x); let j = index"
+                <div class="cell" *ngFor="let item_ of [].constructor(boardSize); let j = index"
                      [class.legal] = "legalMove[i][j]"
                      attr.data-row="{{ i }}" attr.data-column="{{ j }}" (click)="putDisk(i, j, true);">
         

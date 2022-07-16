@@ -116,7 +116,7 @@ button, input[type="submit"] {
     .switch {
         position: relative;
         display: inline-block;
-        width: 60px;
+        width: 60px !important;
         height: 34px;
     }
 
@@ -170,4 +170,40 @@ button, input[type="submit"] {
     
     .slider.round:before {
         border-radius: 50%;
+    }
+
+.switch-container {
+    display: flex;
+
+    justify-self: flex-start;
+    margin-right: auto;
+
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+    .switch-container > * {
+        margin-left: 0 !important;
+    }
+
+    .switch-container label {
+        align-self: center;
+    }
+
+    .switch-container .switch {
+        margin-left: 8px !important;
+    }
+
+/* utility flex */
+.flex {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+    .flex > * {
+        margin-bottom: .5rem;
+        width: fit-content !important;
     }

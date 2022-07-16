@@ -30,6 +30,8 @@ export class JoinGameComponent implements OnInit {
   refreshRoll: boolean = false;
   refreshAllow: boolean = true;
 
+  // create game's rules
+  boardSize: number = 8;
   openGame: boolean = true;
 
   user: any;
@@ -47,11 +49,15 @@ export class JoinGameComponent implements OnInit {
     }
     const name = this.gameForm.value.gameName || null;
 
-    this.createGame(open, name);
+    let rules:any = {};
+    // board size rule
+    rules["boardSize"] = this.boardSize;
+
+    this.createGame(open, name, rules);
   }
 
   // create a new game // TODO: add custom rules
-  createGame(open: boolean, name: string | null) {
+  createGame(open: boolean, name: string | null, rules: any = null) {
     const userId = this.user.uid;
     if (!userId) {
       console.log("you need to be logged in to create a game");
@@ -75,15 +81,12 @@ export class JoinGameComponent implements OnInit {
 
       setDoc(gameDoc, {
         players: [{id: userId, name: this.user.displayName}],
-        // playerNames
         moves: [],
         score: {white: 2, black: 2},
         status: {completed: false, open: open},
         winner: null,
-        // completed: false,
-        // open: open,
         created: new Date(),
-        // winner: null
+        rules: rules
       }).then(() => {
         console.log("created game", id);
         this.toastr.success("Game " + id + " created");

@@ -19,6 +19,7 @@ export class PlayGameComponent implements OnInit {
   gameId: string = "";
   data: any;
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
+  started: boolean = false;
   online: boolean = true;
 
   user: any;
@@ -29,7 +30,7 @@ export class PlayGameComponent implements OnInit {
   won: boolean | null = null;
   resultShown: boolean = false;
 
-  boardSize: { x: number, y: number } = { x: 4, y: 4 };
+  boardSize: number;
   board: string[][] = [];
   flip: boolean[][] = [];
   legalMove: boolean[][] = [];
@@ -97,7 +98,7 @@ export class PlayGameComponent implements OnInit {
       }
 
       // right
-      for (let i = x+1; i < this.boardSize.x; i++) {
+      for (let i = x+1; i < this.boardSize; i++) {
         if (this.board[y][i] === "") {
           break;
         }
@@ -131,7 +132,7 @@ export class PlayGameComponent implements OnInit {
       }
 
       // down
-      for (let i = y+1; i < this.boardSize.y; i++) {
+      for (let i = y+1; i < this.boardSize; i++) {
         if (this.board[i][x] === "") {
           break;
         }
@@ -149,7 +150,7 @@ export class PlayGameComponent implements OnInit {
 
     // on diagonal
       // up-left
-      for (let i = 1; i < this.boardSize.x; i++) {
+      for (let i = 1; i < this.boardSize; i++) {
         if (y-i < 0 || x-i < 0) {
           break;
         }
@@ -173,8 +174,8 @@ export class PlayGameComponent implements OnInit {
       }
 
       // up-right
-      for (let i = 1; i < this.boardSize.x; i++) {
-        if (y-i < 0 || x+i >= this.boardSize.x) {
+      for (let i = 1; i < this.boardSize; i++) {
+        if (y-i < 0 || x+i >= this.boardSize) {
           break;
         }
 
@@ -197,8 +198,8 @@ export class PlayGameComponent implements OnInit {
       }
 
       // down-left
-      for (let i = 1; i < this.boardSize.x; i++) {
-        if (y+i >= this.boardSize.y || x-i < 0) {
+      for (let i = 1; i < this.boardSize; i++) {
+        if (y+i >= this.boardSize || x-i < 0) {
           break;
         }
 
@@ -221,8 +222,8 @@ export class PlayGameComponent implements OnInit {
       }
 
       // down-right
-      for (let i = 1; i < this.boardSize.x; i++) {
-        if (y+i >= this.boardSize.y || x+i >= this.boardSize.x) {
+      for (let i = 1; i < this.boardSize; i++) {
+        if (y+i >= this.boardSize || x+i >= this.boardSize) {
           break;
         }
 
@@ -290,7 +291,7 @@ export class PlayGameComponent implements OnInit {
       this.data.moves.push({ x: x, y: y, color: color });
 
       // check if game over
-      if (this.data.moves.length >= (this.boardSize.x * this.boardSize.y - 4)) {
+      if (this.data.moves.length >= (this.boardSize * this.boardSize - 4)) {
         this.setWinner();
       }
 
@@ -351,16 +352,16 @@ export class PlayGameComponent implements OnInit {
     let n:number = 0;
 
     // iterate through empty cells
-    for (let i = 0; i < this.boardSize.y; i++) {
-      for (let j = 0; j < this.boardSize.x; j++) {
+    for (let i = 0; i < this.boardSize; i++) {
+      for (let j = 0; j < this.boardSize; j++) {
         this.legalMove[i][j] = false;
 
         if (this.board[i][j] === "") {
           // check if opponent's disk is adjacent to this cell
           let opponentAdj: boolean = false;
 
-          let rangeX = [...Array(this.boardSize.x).keys()];
-          let rangeY = [...Array(this.boardSize.y).keys()];
+          let rangeX = [...Array(this.boardSize).keys()];
+          let rangeY = [...Array(this.boardSize).keys()];
           for (let dx=-1; dx < 2; dx++) {
             if (opponentAdj) { break; }
             
@@ -408,18 +409,18 @@ export class PlayGameComponent implements OnInit {
 
   startGame() {
     // create this.board
-    for (let i = 0; i < this.boardSize.x; i++) {
+    for (let i = 0; i < this.boardSize; i++) {
       this.board[i] = [];
       this.flip[i] = [];
       this.legalMove[i] = [];
-      for (let j = 0; j < this.boardSize.y; j++) {
+      for (let j = 0; j < this.boardSize; j++) {
         this.board[i][j] = "";
         this.flip[i][j] = false;
         this.legalMove[i][j] = false;
       }
     }
 
-    const center = Math.floor(this.boardSize.x / 2);
+    const center = Math.floor(this.boardSize / 2);
 
     this.flipDisk(center-1, center-1, "black")
     this.flipDisk(center-1, center, "white")
@@ -445,8 +446,6 @@ export class PlayGameComponent implements OnInit {
     // get domain name and game id
     this.domain = this.document.location.host;
     this.gameId = this.route.snapshot.paramMap.get("id") || "";
-    
-    this.startGame();
 
     // initialize sound notifications
     this.bellRing.src = "/assets/sound/bell-ding.wav";
@@ -469,6 +468,17 @@ export class PlayGameComponent implements OnInit {
 
     onSnapshot(gameDoc, (doc) => {
       this.data = doc.data();
+
+      if (!this.started) {
+        // get game rules
+        if (!this.boardSize) {
+          this.boardSize = this.data.rules.boardSize;
+        }
+
+        // start game if not started
+        this.startGame();
+        this.started = true;
+      }
 
       if (!this.data) {
         this.valid.valid = false;

@@ -96,29 +96,6 @@ button {
         width: fit-content;
     }
 
-    #create-open {
-        display: flex;
-
-        justify-self: flex-start;
-        margin-right: auto;
-
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-    }
-
-        #create-open > * {
-            margin: 0;
-        }
-
-        #create-open label {
-            align-self: center;
-        }
-
-        #create-open .switch {
-            margin-left: 8px;
-        }
-
 form {
     width: 100%;
 }

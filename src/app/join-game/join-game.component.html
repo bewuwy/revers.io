@@ -40,8 +40,22 @@
             <label for="gameName">game name (optional)</label>
             <input type="text" id="gameName" name="gameName" formControlName="gameName" autocomplete="off" />
 
+            <h4>game rules</h4>
+            <form class="flex">
+                <label for="boardSize">board size</label>
+                <input name="boardSize" type="number" min="4" value="8" max="12" step="2" [(ngModel)]="boardSize" >
+
+                <div class="switch-container">
+                    <label for="loseNoMove">lose when no move</label>
+                    <label class="switch">
+                        <input name="loseNoMove" type="checkbox" disabled />
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </form>
+
             <div id="create-submit">
-                <div id="create-open">
+                <div class="switch-container">
                     <label for="gameOpen" *ngIf="openGame">public game</label>
                     <label for="gameOpen" *ngIf="!openGame">private game</label>
                     
