@@ -28,7 +28,7 @@ app-root {
 }
 
 div > span {
-    margin-right: .5rem;
+    margin-right: .25em;
 }
 
 form {
@@ -52,7 +52,7 @@ form {
     }
 
     form label {
-        margin-bottom: .5rem;
+        /* margin-bottom: .5rem; */
         align-self: flex-start;
     }
 
@@ -195,15 +195,71 @@ button, input[type="submit"] {
         margin-left: 8px !important;
     }
 
+.details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+    .details > .summary {
+        cursor: pointer;
+    }
+
+    .details > .details-content {
+        overflow: hidden;
+
+        /* transform-origin: top; */
+        transition: transform .5s ease-in-out;
+    }
+
+    .details[open=false] > .details-content {
+        transition: max-height .5s ease-out;
+        max-height: 0px;
+
+        /* transform: scaleY(0); */
+    }
+
+    .details[open=true] > .details-content {
+        max-height: 15rem;
+        transition: max-height .5s;
+
+        /* transform: scaleY(1); */
+    }
+
 /* utility flex */
 .flex {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
+
+    margin-bottom: .5rem;
 }
 
     .flex > * {
-        margin-bottom: .5rem;
+        /* margin-bottom: .5rem; */
         width: fit-content !important;
     }
+
+    .flex > *.grow {
+        flex-grow: 1;
+    }
+
+.flex .row {
+    flex-direction: row;
+    /* align-items: center; */
+}
+
+    .flex .row > * {
+        align-self: center;
+    }
+
+.flex.gap > * {
+    margin-right: .25em;
+}
+
+/* utility */
+.mb-0 {
+    margin-bottom: 0;
+}

@@ -6,6 +6,7 @@ import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 
+
 // TODO: add custom game rules
 
 @Component({
@@ -30,8 +31,10 @@ export class JoinGameComponent implements OnInit {
   refreshRoll: boolean = false;
   refreshAllow: boolean = true;
 
+  openRules: boolean = false;
   // create game's rules
-  boardSize: number = 8;
+  rules = { boardSize: 8, loseNoMove: false, startingDisks: true };
+  rulesPreset:string = 'othello';
   openGame: boolean = true;
 
   user: any;
@@ -39,6 +42,27 @@ export class JoinGameComponent implements OnInit {
 
   constructor(private db: Firestore, private auth: Auth, 
               private router: Router, private toastr: ToastrService) { }
+
+  changeRulesPreset(event: any) {
+    const preset = event.target.value;
+    this.rulesPreset = preset;
+    
+    switch (preset) {
+      case 'othello':
+        this.rules.boardSize = 8;
+        this.rules.loseNoMove = false;
+        this.rules.startingDisks = true;
+        break;
+      case 'reversi':
+        this.rules.boardSize = 8;
+        this.rules.loseNoMove = true;
+        this.rules.startingDisks = false;
+        break;
+      case 'none':
+        this.openRules = true;
+        break;
+    }
+  }
 
   onCreateGame() {
     console.log(this.gameForm.value);
@@ -49,11 +73,13 @@ export class JoinGameComponent implements OnInit {
     }
     const name = this.gameForm.value.gameName || null;
 
-    let rules:any = {};
-    // board size rule
-    rules["boardSize"] = this.boardSize;
+    // check if rules are valid
+    if (this.rules.boardSize < 4 || this.rules.boardSize > 12) {
+      this.toastr.error("Board size must be between 4 and 12", "Error creating game");
+      return;
+    }
 
-    this.createGame(open, name, rules);
+    this.createGame(open, name, this.rules);
   }
 
   // create a new game // TODO: add custom rules

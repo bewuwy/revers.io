@@ -277,6 +277,7 @@ export class PlayGameComponent implements OnInit {
       color = this.playerColor;
     }
 
+    this.legalMove[y][x] = false;
     this.flipDisk(y, x, color);
 
     let flipped = this.getFlippedDisks(y, x, color);
@@ -290,8 +291,9 @@ export class PlayGameComponent implements OnInit {
       this.data.score[color]++;
       this.data.moves.push({ x: x, y: y, color: color });
 
-      // check if game over
-      if (this.data.moves.length >= (this.boardSize * this.boardSize - 4)) {
+      // check if board is full
+      const maxMoves = (this.boardSize * this.boardSize) - (this.data.rules.startingDisks * 4);
+      if (this.data.moves.length >= maxMoves) {
         this.setWinner();
       }
 
@@ -318,7 +320,7 @@ export class PlayGameComponent implements OnInit {
 
   getWon() {
     if (this.data.status.completed) {
-     
+    
       if (this.data.winner === "tie") {
         this.won = null;
       }
@@ -330,6 +332,11 @@ export class PlayGameComponent implements OnInit {
 
   skipTurn() {
     if (this.data.completed) { return; }
+    if (this.data.rules.loseNoMove) {
+      this.data.status.completed = true;
+      this.data.winner = this.opponent.id;
+      this.won = false;
+    }
 
     this.data.moves.push({ x: -1, y: -1, color: this.playerColor });
 
@@ -350,6 +357,23 @@ export class PlayGameComponent implements OnInit {
 
   getLegalMoves() {
     let n:number = 0;
+
+    // reversi original rules - no starting disks
+    if (!this.data.rules.startingDisks && this.data.moves.length < 4) {
+      // 4 center cells are legal
+      const center = Math.floor(this.boardSize/2)-1;
+
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
+          if (this.board[center+i][center+j] === "") {
+            this.legalMove[center+i][center+j] = true;
+            n ++;
+          }
+        }
+      }
+
+      return;
+    }
 
     // iterate through empty cells
     for (let i = 0; i < this.boardSize; i++) {
@@ -422,10 +446,12 @@ export class PlayGameComponent implements OnInit {
 
     const center = Math.floor(this.boardSize / 2);
 
-    this.flipDisk(center-1, center-1, "black")
-    this.flipDisk(center-1, center, "white")
-    this.flipDisk(center, center, "black")
-    this.flipDisk(center, center-1, "white")
+    if (this.data.rules.startingDisks) {
+      this.flipDisk(center-1, center-1, "black");
+      this.flipDisk(center-1, center, "white");
+      this.flipDisk(center, center, "black");
+      this.flipDisk(center, center-1, "white");        
+    }
   }
 
   ngOnInit(): void {
@@ -538,7 +564,9 @@ export class PlayGameComponent implements OnInit {
         if (move.x === -1 && move.y === -1) {
           // if the move was the last move, inform user
           if (i === this.data.moves.length-1 && move.color === this.opponentColor) {
-            this.toastr.info("Opponent couldn't make a move!", "Your turn!", {timeOut: 5000});
+            const msg = this.data.rules.loseNoMove ? "You won!" : "Your turn!";
+
+            this.toastr.info("Opponent couldn't make a move!", msg, {timeOut: 5000});
           }
 
           continue;
@@ -605,7 +633,9 @@ export class PlayGameComponent implements OnInit {
           if (legalMovesN === 0) {
             // skip move after a second
             setTimeout(() => {
-              this.toastr.warning("You have no legal moves", "Skipping your turn!", {timeOut: 3000});
+              let msg = this.data.rules.loseNoMove? "You lost!" : "Skipping turn...";
+
+              this.toastr.warning("You have no legal moves", msg, {timeOut: 3000});
   
               this.skipTurn();
             }, 1000);
