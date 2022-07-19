@@ -34,6 +34,24 @@ nav {
         font-weight: bold;
     }
 
+    .login .sign-out-span {
+        display: none;
+    }
+
+    .login .sign-out-svg {
+        margin-right: -.2rem;
+    }
+
+    @media (min-width: 768px) {
+        .login .sign-out-span {
+            display: block;
+        }
+
+        .login .sign-out-svg {
+            margin-right: 0.25rem;
+        }
+    }
+
 footer {
     position: absolute;
     bottom: 0;
