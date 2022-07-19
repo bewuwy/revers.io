@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { nanoid, customAlphabet } from 'nanoid';
-import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit } from "@angular/fire/firestore"; 
+import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit, DocumentData } from "@angular/fire/firestore"; 
 import { Router } from '@angular/router';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -27,7 +27,7 @@ export class JoinGameComponent implements OnInit {
     gameId: new FormControl('', {nonNullable: true}),
   });
 
-  gamesList: string[] = [];
+  gamesList: DocumentData[] = [];
   refreshRoll: boolean = false;
   refreshAllow: boolean = true;
 
@@ -196,12 +196,25 @@ export class JoinGameComponent implements OnInit {
     const gamesCollection = collection(this.db, 'games');
 
     // query for open games
-    const q = query(gamesCollection, where('completed', '==', false), where("open", "==", true), limit(3), orderBy('created'));
+    const q = query(gamesCollection, where('status.completed', '==', false), where("status.open", "==", true), limit(3), orderBy('created'));
     getDocs(q).then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         // console.log(doc.id, " => ", doc.data());
+        let game = doc.data();
+        game['id'] = doc.id;
 
-        this.gamesList.push(doc.id);
+        // check ruleset
+        if (game['rules']['boardSize'] === 8 && game['rules']['loseNoMove'] === false && game['rules']['startingDisks'] === true) {
+          game['type'] = 'Othello';
+        }
+        else if (game['rules']['boardSize'] === 8 && game['rules']['loseNoMove'] === true && game['rules']['startingDisks'] === false) {
+          game['type'] = 'Reversi';
+        }
+        else {
+          game['type'] = 'Custom';
+        }
+
+        this.gamesList.push(game);
       });
     });
   }

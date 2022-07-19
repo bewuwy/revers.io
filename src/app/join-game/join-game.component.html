@@ -14,15 +14,16 @@
             <div *ngIf="gamesList.length == 0">
                 <span>there are currently no open games D:</span>
             </div>
-            <div *ngFor="let gameId of gamesList" id="gamesList">
-                <button (click)="joinGame(gameId)">join game {{ gameId }}</button>
+            <div *ngFor="let game of gamesList" class="game">
+                <span>{{ game['players'][0].name }}'s {{ game['type'] }} game</span>
+                <button (click)="joinGame(game['id'])" [title]="game['id']">Join</button>
             </div>
         </div>
 
         <div class="join">
             <h3>Join a private game</h3>
             <form (ngSubmit)="onJoinPrivateGame()" [formGroup]="joinGameForm">
-                <label for="gameName">game name</label>
+                <label for="gameName">Game name (required)</label>
                 <input type="text" id="gameName" name="gameName" formControlName="gameId" autocomplete="off" required />
 
                 <div *ngIf="joinGameForm.controls['gameId'].invalid && (joinGameForm.dirty || joinGameForm.touched || joinGameForm.controls['gameId'].dirty || joinGameForm.controls['gameId'].touched)" class="alert">
