@@ -288,7 +288,11 @@ export class PlayGameComponent implements OnInit {
  
     // update database only if move was made by a player
     if (user) {
-      this.data.score[color]++;
+      // if not first 4 moves in reversi game
+      if ((!this.data.rules.startingDisks && this.data.moves.length >= 4) || this.data.rules.startingDisks) {
+        this.data.score[color]++;
+      }
+
       this.data.moves.push({ x: x, y: y, color: color });
 
       // check if board is full
