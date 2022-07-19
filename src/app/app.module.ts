@@ -17,6 +17,7 @@ import { InviteComponent } from './invite/invite.component';
 import { IndexComponent } from './index/index.component';
 import { ToastrModule } from 'ngx-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 
 @NgModule({
@@ -39,10 +40,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     ReactiveFormsModule,
     ClipboardModule,
     BrowserAnimationsModule, // required animations module
-    ToastrModule.forRoot({
-      positionClass: 'toast-bottom-center',
-      timeOut: 2500,
-    }), // ToastrModule added
+    ToastrModule.forRoot({ positionClass: 'toast-bottom-center', timeOut: 2500, }),
+    NgxChartsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

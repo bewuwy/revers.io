@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
-import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, increment } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { fromEvent, map, merge, Observable, Observer } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
@@ -309,7 +309,6 @@ export class PlayGameComponent implements OnInit {
       this.data.winner = "tie";
     } 
     else {
-
       const winnerColor = this.data.score["black"] > this.data.score["white"] ? "black" : "white";
       this.won = this.playerColor === winnerColor;
       this.data.winner = this.won ? this.user?.uid : this.opponent.id;
@@ -345,7 +344,7 @@ export class PlayGameComponent implements OnInit {
 
   // push data to firebase
   pushTurn() {
-    setDoc(doc(collection(this.db, 'game'), this.gameId), this.data).then(() => {
+    setDoc(doc(collection(this.db, 'games'), this.gameId), this.data).then(() => {
       console.log("turn synced");
       this.online = true;
     }).catch((e) => {
@@ -489,11 +488,11 @@ export class PlayGameComponent implements OnInit {
     this.loseEffect.load();
 
     // initialize database
-    const gamesCollection = collection(this.db, 'game');
+    const gamesCollection = collection(this.db, 'games');
     const gameDoc = doc(gamesCollection, this.gameId);
 
-    onSnapshot(gameDoc, (doc) => {
-      this.data = doc.data();
+    onSnapshot(gameDoc, (doc_) => {
+      this.data = doc_.data();
 
       if (!this.started) {
         // get game rules
@@ -536,6 +535,14 @@ export class PlayGameComponent implements OnInit {
       if (playerIds.indexOf(this.user?.uid) === -1) {
         this.valid.valid = false;
         this.valid.reason = "You are not in this game";
+
+        return;
+      }
+
+      // check if game is over when just loaded
+      if (this.localMoves.length === 0 && this.data.status.completed) { 
+        this.valid.valid = false;
+        this.valid.reason = "This game has ended";
 
         return;
       }
@@ -607,6 +614,23 @@ export class PlayGameComponent implements OnInit {
           this.toastr.info("You lost! 😥", "", {timeOut: 5000});
           this.loseEffect.play();
         }
+
+        if (!this.user.uid.toString().startsWith("guest-")) {
+          // update current user's win stats
+          const userDoc = doc(collection(this.db, "users"), this.user?.uid);
+                  
+          let lost = 0;
+          if (!this.won && this.data.winner !== "tie") {
+            lost = 1;
+          }
+
+          updateDoc(userDoc, {
+            wins: increment(this.won ? 1 : 0),
+            losses: increment(lost ? 1 : 0),
+            ties: increment(this.data.winner === "tie" ? 1 : 0),
+            gamesNumber: increment(1),
+          }); // TODO: add ranked and casual
+        }
       }
 
       // get game's creation date
@@ -647,8 +671,6 @@ export class PlayGameComponent implements OnInit {
             }, 700);
           }
         }
-
-        
       }
 
       // console.log("data: ", doc.data());
@@ -662,7 +684,7 @@ export class PlayGameComponent implements OnInit {
   
     // delete game if there is only one player left
     if (this.data.players.length === 1) {
-      deleteDoc(doc(collection(this.db, 'game'), this.gameId));
+      deleteDoc(doc(collection(this.db, 'games'), this.gameId));
     }
 
     // remove current user from game if it has finished
@@ -671,7 +693,7 @@ export class PlayGameComponent implements OnInit {
       this.data.players.splice(playerIds.indexOf(this.user?.uid), 1);
 
       // update game doc
-      const gamesCollection = collection(this.db, 'game');
+      const gamesCollection = collection(this.db, 'games');
       const gameDoc = doc(gamesCollection, this.gameId);
 
       updateDoc(gameDoc, { players: this.data.players });

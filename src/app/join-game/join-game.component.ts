@@ -90,7 +90,7 @@ export class JoinGameComponent implements OnInit {
       return;
     }
 
-    const gamesCollection = collection(this.db, 'game');
+    const gamesCollection = collection(this.db, 'games');
     let id: string = name || this.nanoid();
 
     // check if custom game name is already in use
@@ -142,7 +142,7 @@ export class JoinGameComponent implements OnInit {
     }
 
     // add player to firestore    
-    const gamesCollection = collection(this.db, 'game');
+    const gamesCollection = collection(this.db, 'games');
     const gameDoc = doc(gamesCollection, gameId);
 
     getDoc(gameDoc).then((doc) => {
@@ -193,7 +193,7 @@ export class JoinGameComponent implements OnInit {
     this.gamesList = [];
 
     // get open games
-    const gamesCollection = collection(this.db, 'game');
+    const gamesCollection = collection(this.db, 'games');
 
     // query for open games
     const q = query(gamesCollection, where('completed', '==', false), where("open", "==", true), limit(3), orderBy('created'));

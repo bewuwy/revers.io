@@ -28,7 +28,7 @@ export class InviteComponent implements OnInit {
 
   onAccept() {
     // add user to game
-    const gameDoc = doc(collection(this.db, "game"), this.gameId);
+    const gameDoc = doc(collection(this.db, "games"), this.gameId);
 
 
     // getDoc(gameDoc).then(game => {
@@ -88,7 +88,7 @@ export class InviteComponent implements OnInit {
     });
 
     // get opponent
-    const gameDoc = doc(collection(this.db, "game"), this.gameId);
+    const gameDoc = doc(collection(this.db, "games"), this.gameId);
 
     getDoc(gameDoc).then(game => {
       this.gameData = game.data();

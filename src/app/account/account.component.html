@@ -1,18 +1,43 @@
-<div *ngIf="account">
-    <h3>your account</h3>
+<div id="account" *ngIf="account">
+    <div id="accountInfo">
+        <h3>Account info</h3>
 
-    <p>username: {{ account.displayName }}</p>
-    <p>id: {{ account.uid }}</p>
-    <p>email: {{ account.email }}</p>
-    <p>email verified: {{ account.emailVerified }}</p>
+        <span>username: {{ account.displayName }}</span>
+        <span>id: {{ account.uid }}</span>
+        <div id="email">
+            <span>email: {{ account.email }}</span>
 
-    <h3>Your active games</h3>
+            <svg *ngIf="account.emailVerified" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                <title>E-mail verified!</title>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
 
-    <p *ngIf="games.length === 0">You don't have any active games! Join (or create) one <a routerLink="/join">here</a></p>
-
-    <div id="games">
-        <div *ngFor="let game of games">
-            <p><a routerLink="/play/{{ game }}">game {{ game }}</a></p>
+            <svg *ngIf="!account.emailVerified" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                <title>E-mail not verified!</title>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
         </div>
+    </div>
+
+    <div *ngIf="user">
+        <h3>Statistics</h3>
+
+        <p>You have played <b>{{ user.gamesNumber }}</b> games.</p>
+
+        <div id="chart" *ngIf="chart.render">
+            <ngx-charts-pie-chart [results]="chart.values" [scheme]="chart.colorScheme" [labels]="true" [animations]="false" [legend]="false"></ngx-charts-pie-chart>
+        </div>
+    </div>
+
+    <div id="activeGames">
+        <h3>Active games</h3>
+
+        <p>Work in progress...</p>
+        <!-- <p *ngIf="games.length === 0">You don't have any active games! Join (or create) one <a routerLink="/join">here</a></p>
+        <div id="games">
+            <div *ngFor="let game of games">
+                <p><a routerLink="/play/{{ game }}">game {{ game }}</a></p>
+            </div>
+        </div> -->
     </div>
 </div>

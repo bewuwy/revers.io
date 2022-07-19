@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, Auth, signOut, updateProfile } from '@angular/fire/auth';
+import { setDoc, Firestore, doc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { collection } from '@firebase/firestore';
 
 // TODO: login through google
 
@@ -25,7 +27,8 @@ export class SignInComponent implements OnInit {
     password: new FormControl('', {nonNullable: true})
   });
 
-  constructor(private auth: Auth, private router: Router,
+  constructor(private auth: Auth, private db: Firestore, 
+              private router: Router,
               private toastr: ToastrService) {
                 
     onAuthStateChanged(this.auth, (user) => {
@@ -66,6 +69,14 @@ export class SignInComponent implements OnInit {
 
       }).catch((error) => {
         console.log("error: ", error);
+      });
+
+      // create user document
+      setDoc(doc(collection(this.db, 'users'), user.user.uid), {
+        wins: 0,
+        losses: 0,
+        ties: 0,
+        gamesNumber: 0,
       });
 
     }).catch((error) => {
