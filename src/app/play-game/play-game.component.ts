@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
-import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, increment } from '@angular/fire/firestore';
+import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, increment, arrayRemove } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { fromEvent, map, merge, Observable, Observer } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
@@ -455,37 +455,37 @@ export class PlayGameComponent implements OnInit {
 
   ngOnInit(): void {
     // online checker
-    this.createOnline$().subscribe((isOnline:any) => {
-      if (this.online && !isOnline) {
-        this.toastr.error("You went offline!", "", {disableTimeOut: true, tapToDismiss: false});
-      }
-      
-      if (!this.online && isOnline) {
-        this.toastr.clear();
-        this.toastr.success("You went online!");
-      }
+      this.createOnline$().subscribe((isOnline:any) => {
+        if (this.online && !isOnline) {
+          this.toastr.error("You went offline!", "", {disableTimeOut: true, tapToDismiss: false});
+        }
+        
+        if (!this.online && isOnline) {
+          this.toastr.clear();
+          this.toastr.success("You went online!");
+        }
 
-      this.online = isOnline;
-    });
+        this.online = isOnline;
+      });
 
     // get domain name and game id
-    this.domain = this.document.location.host;
-    this.gameId = this.route.snapshot.paramMap.get("id") || "";
+      this.domain = this.document.location.host;
+      this.gameId = this.route.snapshot.paramMap.get("id") || "";
 
     // initialize sound notifications
-    this.bellRing.src = "/assets/sound/bell-ding.wav";
-    this.bellRing.volume = 0.4;
-    this.bellRing.playbackRate = 0.5;
-    this.bellRing.load();
+      this.bellRing.src = "/assets/sound/bell-ding.wav";
+      this.bellRing.volume = 0.4;
+      this.bellRing.playbackRate = 0.5;
+      this.bellRing.load();
 
-    this.winEffect.src = "/assets/sound/win.wav";
-    this.winEffect.volume = 0.4;
-    this.winEffect.load();
+      this.winEffect.src = "/assets/sound/win.wav";
+      this.winEffect.volume = 0.4;
+      this.winEffect.load();
 
-    this.loseEffect.src = "/assets/sound/lose.wav";
-    this.loseEffect.volume = 0.4;
-    this.loseEffect.playbackRate = 0.5;
-    this.loseEffect.load();
+      this.loseEffect.src = "/assets/sound/lose.wav";
+      this.loseEffect.volume = 0.4;
+      this.loseEffect.playbackRate = 0.5;
+      this.loseEffect.load();
 
     // initialize database
     const gamesCollection = collection(this.db, 'games');
@@ -625,10 +625,13 @@ export class PlayGameComponent implements OnInit {
           }
 
           updateDoc(userDoc, {
-            wins: increment(this.won ? 1 : 0),
-            losses: increment(lost ? 1 : 0),
-            ties: increment(this.data.winner === "tie" ? 1 : 0),
-            gamesNumber: increment(1),
+            gameStats: {
+              wins: increment(this.won ? 1 : 0),
+              losses: increment(lost ? 1 : 0),
+              ties: increment(this.data.winner === "tie" ? 1 : 0),
+              gamesNumber: increment(1),
+            },
+            activeGames: arrayRemove(this.gameId),
           }); // TODO: add ranked and casual
         }
       }

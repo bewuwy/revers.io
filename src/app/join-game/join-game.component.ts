@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { nanoid, customAlphabet } from 'nanoid';
-import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit, DocumentData } from "@angular/fire/firestore"; 
+import { Firestore, collection, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit, DocumentData, updateDoc, arrayUnion } from "@angular/fire/firestore"; 
 import { Router } from '@angular/router';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -115,6 +115,12 @@ export class JoinGameComponent implements OnInit {
         rules: rules
       }).then(() => {
         console.log("created game", id);
+
+        // add game to user's active games
+        const userCollection = collection(this.db, 'users');
+        const userDoc = doc(userCollection, userId);
+        updateDoc(userDoc, {activeGames: arrayUnion(id)});
+
         this.toastr.success("Game " + id + " created");
         this.router.navigate(["/play", id]);
   
@@ -145,8 +151,8 @@ export class JoinGameComponent implements OnInit {
     const gamesCollection = collection(this.db, 'games');
     const gameDoc = doc(gamesCollection, gameId);
 
-    getDoc(gameDoc).then((doc) => {
-      const data = doc.data();
+    getDoc(gameDoc).then((doc_) => {
+      const data = doc_.data();
 
       if (data) {
         const playerIds = data['players'].map(function(p:any) {return p['id'];});
@@ -158,6 +164,11 @@ export class JoinGameComponent implements OnInit {
           setDoc(gameDoc, data).then(() => {
             console.log("joined game", gameId);
             this.toastr.success("Joined game " + gameId);
+
+            // add game to user's active games
+            const userCollection = collection(this.db, 'users');
+            const userDoc = doc(userCollection, userId);
+            updateDoc(userDoc, {activeGames: arrayUnion(gameId)});
           });
         }
         else {
@@ -189,14 +200,14 @@ export class JoinGameComponent implements OnInit {
     this.getOpenGames();
   }
 
-  getOpenGames() {
+  getOpenGames(n:number = 3) {
     this.gamesList = [];
 
     // get open games
     const gamesCollection = collection(this.db, 'games');
 
     // query for open games
-    const q = query(gamesCollection, where('status.completed', '==', false), where("status.open", "==", true), limit(3), orderBy('created'));
+    const q = query(gamesCollection, where('status.completed', '==', false), where("status.open", "==", true), limit(n), orderBy('created'));
     getDocs(q).then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
         // console.log(doc.id, " => ", doc.data());

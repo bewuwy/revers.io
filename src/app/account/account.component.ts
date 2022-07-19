@@ -20,7 +20,8 @@ export class AccountComponent implements OnInit {
       domain: ['#53DD6C', '#EE7674', '#627C85']
     }
   };
-  // games: any[] = [];
+
+  activeGames: any[] = [];
 
   constructor(private auth: Auth, private db: Firestore, private router: Router) { }
 
@@ -29,46 +30,40 @@ export class AccountComponent implements OnInit {
       if (user) {
         this.account = user;
 
-        // // get current user's games from firestore
-        // const gamesCollection = collection(this.db, 'games');
-        // const q = query(gamesCollection, where('players', 'array-contains', user.uid), where("completed", "==", false));
-
-        // getDocs(q).then(docs => {
-        //   for (const doc of docs.docs) {
-        //     this.games.push(doc.id);
-        //   }
-        // }).catch(err => {
-        //   console.log(err);
-        // });
-
-        // get current user's statistics from firestore
         const userDoc = doc(this.db, 'users/' + user.uid);
         getDoc(userDoc).then(doc => {
           let data = doc.data();
 
           if (data) {
-            this.user.gamesNumber = data["gamesNumber"];
-            this.user.wins = data["wins"];
-            this.user.losses = data["losses"];
-            this.user.ties = data["ties"];
+            // get current user's statistics from firestore
 
-            // chart
-            this.chart.values = [
-              {
-                name: 'Wins',
-                value: this.user.wins
-              },
-              {
-                name: 'Losses',
-                value: this.user.losses
-              },
-              {
-                name: 'Ties',
-                value: this.user.ties
-              }
-            ];
+            if (data['gameStats']) {
+              this.user.gamesNumber = data["gameStats"]["gamesNumber"];
+              this.user.wins = data["gameStats"]["wins"];
+              this.user.losses = data["gameStats"]["losses"];
+              this.user.ties = data["gameStats"]["ties"];
+            
+              // chart
+              this.chart.values = [
+                {
+                  name: 'Wins',
+                  value: this.user.wins
+                },
+                {
+                  name: 'Losses',
+                  value: this.user.losses
+                },
+                {
+                  name: 'Ties',
+                  value: this.user.ties
+                }
+              ];
 
-            this.chart.render = true;
+              this.chart.render = true;
+            }
+
+            // get current user's active games from firestore
+            this.activeGames = data["activeGames"];
           }
         });
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
-import { Firestore, collection, doc, getDoc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collection, doc, getDoc, updateDoc, arrayUnion } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { nanoid } from 'nanoid';
@@ -39,24 +39,29 @@ export class InviteComponent implements OnInit {
 
       const players = this.gameData["players"];
 
-      if (this.user) {
-        players.push({id: this.user.uid, name: this.user.displayName });
-      }
-      else {
+      if (!this.user) {  // guest
+        this.user = {};
+
         // guest
-        const guestId = "guest-" + nanoid();
-        const guestName = this.tempName || "Guest";
+        this.user.uid = "guest-" + nanoid();
+        this.user.displayName = this.tempName || "Guest";
 
         // set local storage
-        localStorage.setItem("guestId", guestId);
-        localStorage.setItem("guestName", guestName);
-
-        players.push({id: guestId, name: guestName });
+        localStorage.setItem("guestId", this.user.uid);
+        localStorage.setItem("guestName", this.user.displayName);
       }
-
-      console.log(players);
+      
+      players.push({id: this.user.uid, name: this.user.displayName });
 
       updateDoc(gameDoc, { players: players }).then(() => {
+        if (!this.user.uid.toString().startsWith("guest-")) {
+          
+            // add game to user's active games
+            const userCollection = collection(this.db, 'users');
+            const userDoc = doc(userCollection, this.user.uid);
+            updateDoc(userDoc, {activeGames: arrayUnion(this.gameId)});
+        }
+
         // redirect to game
         this.router.navigate(["/play", this.gameId]);
       });

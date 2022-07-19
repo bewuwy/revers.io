@@ -73,10 +73,12 @@ export class SignInComponent implements OnInit {
 
       // create user document
       setDoc(doc(collection(this.db, 'users'), user.user.uid), {
-        wins: 0,
-        losses: 0,
-        ties: 0,
-        gamesNumber: 0,
+        gameStats: {
+          wins: 0,
+          losses: 0,
+          ties: 0,
+          gamesNumber: 0,
+        }
       });
 
     }).catch((error) => {

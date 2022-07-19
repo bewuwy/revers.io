@@ -22,7 +22,7 @@
     <div *ngIf="user">
         <h3>Statistics</h3>
 
-        <p>You have played <b>{{ user.gamesNumber }}</b> games.</p>
+        <p>You have played <b>{{ user.gamesNumber || 0 }}</b> games.</p>
 
         <div id="chart" *ngIf="chart.render">
             <ngx-charts-pie-chart [results]="chart.values" [scheme]="chart.colorScheme" [labels]="true" [animations]="false" [legend]="false"></ngx-charts-pie-chart>
@@ -32,13 +32,12 @@
     <div id="activeGames">
         <h3>Active games</h3>
 
-        <p>Work in progress...</p>
         <!-- TODO: save active games in user document -->
-        <!-- <p *ngIf="games.length === 0">You don't have any active games! Join (or create) one <a routerLink="/join">here</a></p>
+        <p *ngIf="activeGames.length === 0">You don't have any active games! Join (or create) one <a routerLink="/join">here</a></p>
         <div id="games">
-            <div *ngFor="let game of games">
+            <div *ngFor="let game of activeGames">
                 <p><a routerLink="/play/{{ game }}">game {{ game }}</a></p>
             </div>
-        </div> -->
+        </div>
     </div>
 </div>
