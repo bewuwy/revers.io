@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-index',
@@ -6,10 +7,18 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./index.component.css']
 })
 export class IndexComponent implements OnInit {
+  user = false;
 
-  constructor() { }
+  constructor(private auth: Auth) { }
 
   ngOnInit(): void {
+    this.auth.onAuthStateChanged(user => {
+      if (user) {
+        this.user = true;
+      } else {
+        this.user = false;
+      }
+    });
   }
 
 }
