@@ -45,6 +45,10 @@ export class PlayGameComponent implements OnInit {
   winEffect: HTMLAudioElement = new Audio();
   loseEffect: HTMLAudioElement = new Audio();
 
+  // layout settings
+  boardWidth: number | undefined;
+  boardWidthResetShow: boolean = false;
+
   // constructor
   constructor(private db: Firestore, private auth: Auth, 
               private route: ActivatedRoute, private router: Router,
@@ -469,11 +473,11 @@ export class PlayGameComponent implements OnInit {
 
   ngOnInit(): void {
     // online checker
-      this.createOnline$().subscribe((isOnline:any) => {
-        if (this.online && !isOnline) {
-          this.toastr.error("You went offline!", "", {disableTimeOut: true, tapToDismiss: false});
-        }
-        
+    this.createOnline$().subscribe((isOnline:any) => {
+      if (this.online && !isOnline) {
+        this.toastr.error("You went offline!", "", {disableTimeOut: true, tapToDismiss: false});
+      }
+       
         if (!this.online && isOnline) {
           this.toastr.clear();
           this.toastr.success("You went online!");
@@ -730,4 +734,40 @@ export class PlayGameComponent implements OnInit {
       updateDoc(gameDoc, { players: this.data.players });
     }
   }
+
+  // layout settings
+
+  // board width
+    getBoardWidth() {
+      this.boardWidth = 100;
+
+      if ((window.innerWidth) >= 768) {
+        this.boardWidth = 70;
+      }
+      if ((window.innerWidth) >= 1280) {
+        this.boardWidth = 60;
+      }
+    }
+
+    onDecrBoardWidth() {
+      if (!this.boardWidth) { this.boardWidth=0; this.getBoardWidth(); }
+      if (this.boardWidth < 45) { return }
+
+      this.boardWidth -= 5;
+      this.boardWidthResetShow = true;
+    }
+
+    onIncrBoardWidth() {
+      if (!this.boardWidth) { this.boardWidth=0; this.getBoardWidth(); }
+      if (this.boardWidth > 95) { return }
+
+      this.boardWidth += 5;
+      this.boardWidthResetShow = true;
+    }
+
+    onResetBoardWidth() {
+      this.boardWidth = undefined;
+      this.boardWidthResetShow = false;
+    }
+
 }

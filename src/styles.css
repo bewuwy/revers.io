@@ -101,6 +101,17 @@ button, input[type="submit"] {
     justify-content: center;
 }
 
+    .noButton {
+        background-color: transparent;
+        padding: 0;
+        margin: 0;
+    }
+
+    .noButton svg {
+        color: black;
+        margin-right: 0;
+    }
+
 /* @media (min-width: 1024px) {
     button, input[type="submit"] {
         padding: 12px 14px;
