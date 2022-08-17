@@ -54,22 +54,16 @@
         flex-direction: column;
     }
 
-        @media (min-width: 768px) {
+        @media (min-width: 768px) { /* TODO: add option */
             #board-container {
                 width: 70%;
                 align-self: center;
             }
         }
 
-        @media (min-width: 1024px) {
-            #board-container {
-                width: 60%;
-            }
-        }
-
         @media (min-width: 1280px) {
             #board-container {
-                width: 50%;
+                width: 60%;
             }
         }
 
@@ -131,6 +125,33 @@
 
     #board .cell:not(.legal) {
         cursor: default;
+    }
+
+#game-status {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    
+    width: 100%;
+    margin-top: .5rem;
+}
+
+    #game-status span {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+
+        #game-status svg {
+            margin-left: .5rem;
+            margin-right: .5rem;
+        }
+
+    #game-status .give-up {
+        margin-left: auto;
+        justify-self: flex-end;
     }
 
 .score-bar {

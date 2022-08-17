@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
-import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, increment, arrayRemove } from '@angular/fire/firestore';
+import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, increment, arrayRemove, FieldValue } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { fromEvent, map, merge, Observable, Observer } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
@@ -21,6 +21,7 @@ export class PlayGameComponent implements OnInit {
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
   started: boolean = false;
   online: boolean = true;
+  timesLoaded: number = 0;
 
   user: any;
 
@@ -457,6 +458,15 @@ export class PlayGameComponent implements OnInit {
     }
   }
 
+  onGiveUp() {
+    this.data.status.completed = true;
+    this.data.winner = this.opponent.id;
+    this.data.moves.push({ x: -2, y: -2, color: this.playerColor });
+    this.won = false;
+
+    this.pushTurn();
+  }
+
   ngOnInit(): void {
     // online checker
       this.createOnline$().subscribe((isOnline:any) => {
@@ -497,6 +507,12 @@ export class PlayGameComponent implements OnInit {
 
     onSnapshot(gameDoc, (doc_) => {
       this.data = doc_.data();
+      if (!this.data) {
+        this.valid.valid = false;
+        this.valid.reason = "Game not found";
+
+        return;
+      }
 
       if (!this.started) {
         // get game rules
@@ -509,13 +525,6 @@ export class PlayGameComponent implements OnInit {
         this.started = true;
       }
 
-      if (!this.data) {
-        this.valid.valid = false;
-        this.valid.reason = "Game not found";
-
-        return;
-      }
-
       this.user = this.auth.currentUser;
       // check if current user logged in
       if (!this.user) {
@@ -525,7 +534,8 @@ export class PlayGameComponent implements OnInit {
 
         if (!tempName && !tempId) {
           this.valid.valid = false;
-          this.valid.reason = "You need to log in (or get invited) to play";
+          this.valid.reason = "You need to log in (or get invited to this game) to play";
+          // TODO: give invites unique ids
 
           return;
         }
@@ -544,7 +554,7 @@ export class PlayGameComponent implements OnInit {
       }
 
       // check if game is over when just loaded
-      if (this.localMoves.length === 0 && this.data.status.completed) { 
+      if (this.timesLoaded === 0 && this.data.status.completed) { 
         this.valid.valid = false;
         this.valid.reason = "This game has ended";
 
@@ -566,7 +576,6 @@ export class PlayGameComponent implements OnInit {
         // if there were two skips in a row, end game
         if (i > 0 && this.data.moves[i-1].x === -1 && move.x === -1) {
           this.setWinner();
-
           this.pushTurn();
           break;
         }
@@ -583,7 +592,13 @@ export class PlayGameComponent implements OnInit {
           continue;
         }
 
-        // console.log("putting ", move.color, " at ", move.x, move.y);
+        // if move is a give up move, alert player
+        if (move.x === -2 && move.y === -2 && move.color === this.opponentColor) {
+          this.toastr.info("Opponent gave up!", "", {timeOut: 5000});
+
+          break;
+        }
+
         this.putDisk(move.y, move.x, false, move.color);
       }
 
@@ -591,15 +606,15 @@ export class PlayGameComponent implements OnInit {
       this.localMoves = this.data.moves;
 
       // get opponent
-      const opponent = this.data.players.find((player:any) => player.id !== this.user?.uid);
-      if (opponent && !this.opponent) {
-        this.toastr.success(opponent.name + " joined the game!");
-      }
-      this.opponent = opponent;
+        const opponent = this.data.players.find((player:any) => player.id !== this.user?.uid);
+        if (opponent && !this.opponent) {
+          this.toastr.success(opponent.name + " joined the game!");
+        }
+        this.opponent = opponent;
 
-      this.playerColor = playerIds.indexOf(this.user?.uid) === 0 ? "white" : "black";
-      // get opponent's color
-      this.opponentColor = this.playerColor === "black" ? "white" : "black";
+        // get player's and opponent's color
+        this.playerColor = playerIds.indexOf(this.user?.uid) === 0 ? "white" : "black";
+        this.opponentColor = this.playerColor === "black" ? "white" : "black";
 
       // check if current user won
       if (this.data.status.completed && !this.resultShown) {
@@ -619,31 +634,32 @@ export class PlayGameComponent implements OnInit {
           this.loseEffect.play();
         }
 
+        // update current user's win stats (if not guest)
         if (!this.user.uid.toString().startsWith("guest-")) {
-          // update current user's win stats
-          const userDoc = doc(collection(this.db, "users"), this.user?.uid);
-                  
           let lost = 0;
           if (!this.won && this.data.winner !== "tie") {
             lost = 1;
           }
+          
+          const userDoc = doc(collection(this.db, "users"), this.user?.uid);
 
-          updateDoc(userDoc, {
-            gameStats: {
-              wins: increment(this.won ? 1 : 0),
-              losses: increment(lost ? 1 : 0),
-              ties: increment(this.data.winner === "tie" ? 1 : 0),
-              gamesNumber: increment(1),
-            },
+          updateDoc(userDoc, {  // for some reason didn't work when stats were inside a map
+            wins: increment(this.won ? 1 : 0),
+            losses: increment(lost),
+            ties: increment(this.data.winner === "tie" ? 1 : 0),
+            gamesNumber: increment(1),
             activeGames: arrayRemove(this.gameId),
+          }).then(() => {
+            console.log("user stats updated");
           }); // TODO: add ranked and casual
         }
       }
 
       // get game's creation date
-      this.data.created = new Date(this.data.created.seconds * 1000);
-      this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format    
+        this.data.created = new Date(this.data.created.seconds * 1000);
+        this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format    
 
+      // decide on turn, get legal moves
       if (this.data && !this.data.status.completed) {
         // console.log(this.data);
       
@@ -679,8 +695,16 @@ export class PlayGameComponent implements OnInit {
           }
         }
       }
+      else { // game is over, set all moves to illegal
+        for (let i = 0; i < this.board.length; i++) {
+          for (let j = 0; j < this.board[i].length; j++) {
+            this.legalMove[i][j] = false;
+          }
+        }
+      }
 
       // console.log("data: ", doc.data());
+      this.timesLoaded++;
     });
   }
 

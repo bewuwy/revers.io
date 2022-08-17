@@ -7,6 +7,8 @@ import { ToastrService } from 'ngx-toastr';
 import { collection } from '@firebase/firestore';
 
 // TODO: login through google
+// TODO: email check in form
+// TODO: error - email in use
 
 @Component({
   selector: 'app-sign-in',
@@ -73,12 +75,7 @@ export class SignInComponent implements OnInit {
 
       // create user document
       setDoc(doc(collection(this.db, 'users'), user.user.uid), {
-        gameStats: {
-          wins: 0,
-          losses: 0,
-          ties: 0,
-          gamesNumber: 0,
-        }
+        activeGames: []
       });
 
     }).catch((error) => {

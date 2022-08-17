@@ -37,11 +37,11 @@ export class AccountComponent implements OnInit {
           if (data) {
             // get current user's statistics from firestore
 
-            if (data['gameStats']) {
-              this.user.gamesNumber = data["gameStats"]["gamesNumber"];
-              this.user.wins = data["gameStats"]["wins"];
-              this.user.losses = data["gameStats"]["losses"];
-              this.user.ties = data["gameStats"]["ties"];
+            if (data["gamesNumber"]) {
+              this.user.gamesNumber = data["gamesNumber"];
+              this.user.wins = data["wins"];
+              this.user.losses = data["losses"];
+              this.user.ties = data["ties"];
             
               // chart
               this.chart.values = [
