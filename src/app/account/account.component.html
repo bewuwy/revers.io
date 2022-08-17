@@ -16,13 +16,16 @@
                 <title>E-mail not verified!</title>
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
+
+            <span *ngIf="!account.emailVerified" (click)="onVerifyEmailSend()" class="ml"><a>Verify your email</a></span>
         </div>
     </div>
 
     <div *ngIf="user">
         <h3>Statistics</h3>
 
-        <p>You have played <b>{{ user.gamesNumber || 0 }}</b> games.</p>
+        <p *ngIf="!user.gamesNumber">You haven't played any games yet.</p>
+        <p *ngIf="user.gamesNumber">You have played <b>{{ user.gamesNumber || 0 }}</b> games.</p>
 
         <div id="chart" *ngIf="chart.render">
             <ngx-charts-pie-chart [results]="chart.values" [scheme]="chart.colorScheme" [labels]="true" [animations]="false" [legend]="false"></ngx-charts-pie-chart>

@@ -1,9 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { Auth, User, onAuthStateChanged } from '@angular/fire/auth';
-import { Firestore, collection, doc, query, where, getDocs, getDoc } from '@angular/fire/firestore';
+import { Component, OnInit } from '@angular/core';
+import { Auth, User, onAuthStateChanged, sendEmailVerification } from '@angular/fire/auth';
+import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
-
-import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { ToastrService } from 'ngx-toastr';
 
 // TODO: game statistics
 
@@ -23,7 +22,15 @@ export class AccountComponent implements OnInit {
 
   activeGames: any[] = [];
 
-  constructor(private auth: Auth, private db: Firestore, private router: Router) { }
+  constructor(private auth: Auth, private db: Firestore, private router: Router, private toastr: ToastrService ) { }
+
+  onVerifyEmailSend() {
+    if (!this.auth.currentUser) { return }
+
+    sendEmailVerification(this.auth.currentUser).then(() => {
+      this.toastr.success('Check your email inbox', 'Email verification sent', {timeOut: 5000});
+    });
+  }
 
   ngOnInit(): void { 
     onAuthStateChanged(this.auth, (user) => {

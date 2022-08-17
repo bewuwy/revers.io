@@ -13,11 +13,11 @@
         </div>
 
         <label for="login-password">password (required)</label>
-        <input id="login-password" name="pass" type="password" formControlName="password" required minlength="6" >
+        <input id="login-password" name="pass" type="password" formControlName="password" required [minlength]="MIN_PASSWORD_LENGTH" >
 
         <div *ngIf="loginForm.controls['password'].invalid && (loginForm.controls['password'].dirty || loginForm.controls['password'].touched)" class="alert">
             <span *ngIf="loginForm.controls['password'].errors!['required']">*password required</span>
-            <span *ngIf="loginForm.controls['password'].touched && loginForm.controls['password'].errors!['minlength']">*password must be at least 6 characters</span>
+            <span *ngIf="loginForm.controls['password'].touched && loginForm.controls['password'].errors!['minlength']">*password must be at least {{ MIN_PASSWORD_LENGTH }} characters</span>
             <span *ngIf="loginForm.controls['password'].errors!['wrongPassword']">Incorrect email or password! 
                 <a (click)="onForgotPassword()" title="Click to reset your password">Forgot your password?</a>
             </span>
@@ -38,10 +38,11 @@
 
     <form (ngSubmit)="onSubmitRegister();" [formGroup]="registerForm" >
         <label for="register-username">username (required)</label>
-        <input id="register-username" name="username" type="text" formControlName="username" autocomplete="off" required >
+        <input id="register-username" name="username" type="text" formControlName="username" autocomplete="off" required [maxlength]="MAX_USERNAME_LENGTH" >
 
         <div *ngIf="registerForm.controls['username'].invalid && (registerForm.controls['username'].dirty || registerForm.controls['username'].touched)" class="alert">
             <span *ngIf="registerForm.controls['username'].errors!['required']">*username required</span>
+            <span *ngIf="registerForm.controls['username'].errors!['maxlength']">*username must be at most {{ MAX_USERNAME_LENGTH }} characters</span>
         </div>
 
         <label for="register-email">e-mail (required)</label>
@@ -53,11 +54,11 @@
         </div>
 
         <label for="register-password">password (required)</label>
-        <input id="register-password" name="pass" type="password" formControlName="password" required minlength="6" >
+        <input id="register-password" name="pass" type="password" formControlName="password" required [minlength]="MIN_PASSWORD_LENGTH" >
 
         <div *ngIf="registerForm.controls['password'].invalid && (registerForm.controls['password'].dirty || registerForm.controls['password'].touched)" class="alert">
             <span *ngIf="registerForm.controls['password'].errors!['required']">*password required</span>
-            <span *ngIf="registerForm.controls['password'].errors!['minlength']">*password must contain at least 6 characters</span>
+            <span *ngIf="registerForm.controls['password'].errors!['minlength']">*password must contain at least {{ MIN_PASSWORD_LENGTH }} characters</span>
         </div>
 
         <button type="submit">

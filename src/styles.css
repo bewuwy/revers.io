@@ -274,3 +274,7 @@ button, input[type="submit"] {
 .mb-0 {
     margin-bottom: 0;
 }
+
+.ml {
+    margin-left: .25rem;
+}

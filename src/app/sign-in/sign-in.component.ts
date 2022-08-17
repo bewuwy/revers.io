@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, Auth, signOut, updateProfile, sendPasswordResetEmail } from '@angular/fire/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, Auth, 
+         signOut, updateProfile, sendPasswordResetEmail, sendEmailVerification } from '@angular/fire/auth';
 import { setDoc, Firestore, doc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -15,6 +16,11 @@ import Swal from 'sweetalert2'
   styleUrls: ['./sign-in.component.css']
 })
 export class SignInComponent implements OnInit {
+  // const variables
+  MAX_USERNAME_LENGTH = 20;
+  MIN_PASSWORD_LENGTH = 8;
+
+
   logged: boolean = false;
 
   registerForm = new FormGroup({
@@ -87,11 +93,12 @@ export class SignInComponent implements OnInit {
       updateProfile(user.user, {displayName: username}).then(() => {
         console.log("updated user: ", user.user);
 
+        sendEmailVerification(user.user).then(() => {
+          this.toastr.success("Please verify your email", "Signed up successfully", {timeOut: 3000});
+        });
+
         // navigate to account page
         this.router.navigate(['account']);
-        // .then(() => {
-        //   location.reload();
-        // });
 
       }).catch((error) => {
         console.log("error: ", error);
