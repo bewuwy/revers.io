@@ -5,10 +5,11 @@
 
     <form (ngSubmit)="onSubmitLogin();" [formGroup]="loginForm" >
         <label for="login-email">e-mail (required)</label>
-        <input id="login-email" name="email" type="email" formControlName="email" required >
+        <input id="login-email" name="email" type="email" formControlName="email" required pattern="^.+@.+\..{2,4}$" >
 
         <div *ngIf="loginForm.controls['email'].invalid && (loginForm.controls['email'].dirty || loginForm.controls['email'].touched)" class="alert">
             <span *ngIf="loginForm.controls['email'].errors!['required']">*e-mail required</span>
+            <span *ngIf="loginForm.controls['email'].errors!['pattern']">*e-mail not valid</span>
         </div>
 
         <label for="login-password">password (required)</label>
@@ -17,7 +18,12 @@
         <div *ngIf="loginForm.controls['password'].invalid && (loginForm.controls['password'].dirty || loginForm.controls['password'].touched)" class="alert">
             <span *ngIf="loginForm.controls['password'].errors!['required']">*password required</span>
             <span *ngIf="loginForm.controls['password'].touched && loginForm.controls['password'].errors!['minlength']">*password must be at least 6 characters</span>
-            <span *ngIf="loginForm.controls['password'].errors!['wrongPassword']">incorrect user or password!</span>
+            <span *ngIf="loginForm.controls['password'].errors!['wrongPassword']">Incorrect email or password! 
+                <a (click)="onForgotPassword()" title="Click to reset your password">Forgot your password?</a>
+            </span>
+            <span *ngIf="loginForm.controls['password'].errors!['accountTempDisabled']">Your account is temporarily locked due to too many unsuccessful login attempts!
+                <a (click)="onForgotPassword()" title="Click to reset your password">Reset your password</a>
+            </span>
         </div>
 
         <button type="submit">
@@ -43,6 +49,7 @@
 
         <div *ngIf="registerForm.controls['email'].invalid && (registerForm.controls['email'].dirty || registerForm.controls['email'].touched)" class="alert">
             <span *ngIf="registerForm.controls['email'].errors!['required']">*e-mail required</span>
+            <span *ngIf="registerForm.controls['email'].errors!['emailInUse']">*email already in use</span>
         </div>
 
         <label for="register-password">password (required)</label>

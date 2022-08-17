@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, Auth, signOut, updateProfile } from '@angular/fire/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, Auth, signOut, updateProfile, sendPasswordResetEmail } from '@angular/fire/auth';
 import { setDoc, Firestore, doc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { collection } from '@firebase/firestore';
+import Swal from 'sweetalert2'
 
 // TODO: login through google
-// TODO: email check in form
-// TODO: error - email in use
 
 @Component({
   selector: 'app-sign-in',
@@ -35,6 +34,10 @@ export class SignInComponent implements OnInit {
                 
     onAuthStateChanged(this.auth, (user) => {
       this.logged = user !== null;
+
+      if (this.logged) {
+        this.router.navigate(['account']);
+      }
     });
    }
 
@@ -53,6 +56,27 @@ export class SignInComponent implements OnInit {
 
     if (this.loginForm.value.email && this.loginForm.value.password && this.loginForm.valid) {
       this.signIn(this.loginForm.value.email, this.loginForm.value.password);
+    }
+  }
+
+  onForgotPassword() {
+    const email = this.loginForm.value.email;
+
+    if (email) {
+      Swal.fire({
+        html: `An email will be sent to <b>${email}</b> with instructions on how to reset your password.`,
+        showCancelButton: true,
+        cancelButtonColor: '#d33',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          sendPasswordResetEmail(this.auth, email).then(() => {
+            this.toastr.success('Email with password reset instructions sent', 'Email sent', {timeOut: 8000});
+          });
+        }
+      });
+    }
+    else {
+      this.toastr.error('Please enter an email', 'Password reset', {timeOut: 3000});
     }
   }
 
@@ -80,6 +104,16 @@ export class SignInComponent implements OnInit {
 
     }).catch((error) => {
       console.log("error: ", error);
+
+      // email in use
+      if (error.code === 'auth/email-already-in-use') {
+        this.registerForm.controls.email.setErrors({'emailInUse': true});
+        this.toastr.error("Email already in use", "Error creating an account", {timeOut: 5000});
+      }
+
+      else {
+        this.toastr.error(error.code, "Error creating an account", {timeOut: 3000});
+      }
     });
   }
 
@@ -96,8 +130,15 @@ export class SignInComponent implements OnInit {
         this.loginForm.controls.password.setErrors({'wrongPassword': true});
       }
 
+      // account temporarily disabled
+      else if (error.code === 'auth/too-many-requests') {
+        console.log("account temporarily disabled");
+        this.loginForm.controls.password.setErrors({'accountTempDisabled': true});
+      }
+
       else {
         console.log("error: ", error);
+        this.toastr.error(error.code, "Error signing in", {timeOut: 3000});
       }
     });
   }
