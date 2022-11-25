@@ -66,7 +66,7 @@ export class PlayGameComponent implements OnInit {
   }
 
   getInvite(gameId: string) {
-    return this.domain + "/invite/" + gameId;
+    return 'https://' + this.domain + "/invite/" + gameId;
   }
 
   flipDisk(y: number, x:number, color: string) {
@@ -353,6 +353,9 @@ export class PlayGameComponent implements OnInit {
 
   // push data to firebase
   pushTurn() {
+    console.log("trying to push turn");
+    console.log(this.data);
+
     setDoc(doc(collection(this.db, 'games'), this.gameId), this.data).then(() => {
       console.log("turn synced");
       this.online = true;
