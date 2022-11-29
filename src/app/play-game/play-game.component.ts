@@ -41,6 +41,7 @@ export class PlayGameComponent implements OnInit {
   playerColor: string = "";
   playerTurn: boolean;
   localMoves: { x: number, y: number, color: string }[] = [];
+  stopRecreate: boolean = false;
 
   // audio effects
   bellRing:HTMLAudioElement = new Audio();
@@ -448,6 +449,11 @@ export class PlayGameComponent implements OnInit {
   }
 
   startGame() {
+    // reset values
+    this.localMoves = [];
+    this.resultShown = false;
+    this.won = false;
+
     // create this.board
     for (let i = 0; i < this.boardSize; i++) {
       this.board[i] = [];
@@ -468,6 +474,8 @@ export class PlayGameComponent implements OnInit {
       this.flipDisk(center, center, "black");
       this.flipDisk(center, center-1, "white");        
     }
+
+    this.stopRecreate = false;
   }
 
   onGiveUp() {
@@ -477,6 +485,43 @@ export class PlayGameComponent implements OnInit {
     this.won = false;
 
     this.pushTurn();
+  }
+
+  onRematch() {
+
+    if (!this.data.rematch) {
+      this.data.rematch = [this.user.uid];
+    }
+
+    if (!this.data.rematch || this.data.rematch.length < 1) {
+      this.toastr.success("Rematch request sent");
+    }
+    // else {
+    //   this.toastr.success("Rematch accepted");
+    // }
+
+    if (!this.data.rematch.includes(this.user.uid)) {
+      this.data.rematch.push(this.user.uid);
+    }
+
+    this.pushTurn();
+
+    if (this.data.rematch.length === 2) {
+      this.data.rematch = [];
+
+      this.data.status.completed = false;
+      this.data.winner = "";
+      this.data.moves = [];
+      this.data.score = { white: this.data.rules.startingDisks * 2, black: this.data.rules.startingDisks * 2 };
+      this.won = null;
+
+      this.pushTurn();
+
+      // window.location.reload();
+      this.startGame();
+    }
+
+    this.stopRecreate = true;
   }
 
   ngOnInit(): void {
@@ -567,43 +612,51 @@ export class PlayGameComponent implements OnInit {
 
       // recreate moves on board
       console.log("recreate", this.data.moves.length-this.localMoves.length, "moves on board");
-      for (let i = 0; i < this.data.moves.length; i++) {
-        const move = this.data.moves[i];
 
-        // if move already on local board, skip
-        const localMove = this.localMoves[i];
-        if (localMove && localMove.x == move.x && localMove.y == move.y && localMove.color == move.color) {
-          // console.log("move already on local board");
-          continue;
-        }
+      if (this.data.moves.length-this.localMoves.length < 0) {
+        this.startGame();        
+        this.toastr.success("Rematch accepted");
+      }
 
-        // if there were two skips in a row, end game
-        if (i > 0 && this.data.moves[i-1].x === -1 && move.x === -1) {
-          this.setWinner();
-          this.pushTurn();
-          break;
-        }
-
-        // if move is a skip move
-        if (move.x === -1 && move.y === -1) {
-          // if the move was the last move, inform user
-          if (i === this.data.moves.length-1 && move.color === this.opponentColor) {
-            const msg = this.data.rules.loseNoMove ? "You won!" : "Your turn!";
-
-            this.toastr.info("Opponent couldn't make a move!", msg, {timeOut: 5000});
+      if (!this.stopRecreate) {
+        for (let i = 0; i < this.data.moves.length; i++) {
+          const move = this.data.moves[i];
+  
+          // if move already on local board, skip
+          const localMove = this.localMoves[i];
+          if (localMove && localMove.x == move.x && localMove.y == move.y && localMove.color == move.color) {
+            // console.log("move already on local board");
+            continue;
           }
-
-          continue;
+  
+          // if there were two skips in a row, end game
+          if (i > 0 && this.data.moves[i-1].x === -1 && move.x === -1) {
+            this.setWinner();
+            this.pushTurn();
+            break;
+          }
+  
+          // if move is a skip move
+          if (move.x === -1 && move.y === -1) {
+            // if the move was the last move, inform user
+            if (i === this.data.moves.length-1 && move.color === this.opponentColor) {
+              const msg = this.data.rules.loseNoMove ? "You won!" : "Your turn!";
+  
+              this.toastr.info("Opponent couldn't make a move!", msg, {timeOut: 5000});
+            }
+  
+            continue;
+          }
+  
+          // if move is a give up move, alert player
+          if (move.x === -2 && move.y === -2 && move.color === this.opponentColor) {
+            this.toastr.info("Opponent gave up!", "", {timeOut: 5000});
+  
+            break;
+          }
+  
+          this.putDisk(move.y, move.x, false, move.color);
         }
-
-        // if move is a give up move, alert player
-        if (move.x === -2 && move.y === -2 && move.color === this.opponentColor) {
-          this.toastr.info("Opponent gave up!", "", {timeOut: 5000});
-
-          break;
-        }
-
-        this.putDisk(move.y, move.x, false, move.color);
       }
 
       // update local moves
@@ -620,8 +673,13 @@ export class PlayGameComponent implements OnInit {
         this.playerColor = this.data.players.find((player:any) => player.id === this.user?.uid).color;
         this.opponentColor = this.playerColor === "black" ? "white" : "black";
 
+      // check if opponent wants to rematch
+      if (this.data.rematch && this.data.rematch.includes(this.opponent.id) && !this.stopRecreate) {
+        this.toastr.warning("Opponent wants to rematch");
+      }
+
       // check if current user won
-      if (this.data.status.completed && !this.resultShown) {
+      if (this.data.status.completed && !this.resultShown && !this.stopRecreate) {
         // this.won = this.data.winner === this.user?.uid;
         this.resultShown = true;
         this.getWon();
@@ -708,7 +766,7 @@ export class PlayGameComponent implements OnInit {
         }
       }
 
-      // console.log("data: ", doc.data());
+      // console.log("data: ", this.data);
       // // this.timesLoaded++;
     });
   }
