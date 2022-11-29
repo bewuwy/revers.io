@@ -36,6 +36,7 @@ export class PlayGameComponent implements OnInit {
   board: string[][] = [];
   flip: boolean[][] = [];
   legalMove: boolean[][] = [];
+  lastPlaced: {y: number, x: number} = {y: -1, x: -1};
 
   playerColor: string = "";
   playerTurn: boolean;
@@ -254,6 +255,8 @@ export class PlayGameComponent implements OnInit {
     if (x < 0 || y < 0) {
       return;
     }
+
+    this.lastPlaced = {y: y, x: x};
 
     // check if game started
     if (user && !this.opponent.id) {
