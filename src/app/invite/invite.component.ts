@@ -50,8 +50,10 @@ export class InviteComponent implements OnInit {
         localStorage.setItem("guestId", this.user.uid);
         localStorage.setItem("guestName", this.user.displayName);
       }
+
+      let color = players[0].color === "black" ? "white" : "black";
       
-      players.push({id: this.user.uid, name: this.user.displayName });
+      players.push({id: this.user.uid, name: this.user.displayName, color: color });
 
       updateDoc(gameDoc, { players: players }).then(() => {
         if (!this.user.uid.toString().startsWith("guest-")) {

@@ -35,6 +35,8 @@ export class JoinGameComponent implements OnInit {
   // create game's rules
   rules = { boardSize: 8, loseNoMove: false, startingDisks: true };
   rulesPreset:string = 'othello';
+  startColor:string = 'random';
+  playerColor:string = 'white';
   openGame: boolean = true;
 
   user: any;
@@ -64,6 +66,27 @@ export class JoinGameComponent implements OnInit {
     }
   }
 
+  changeStartColor(event: any) {
+    // console.log(event);
+
+    const color = event.target.value;
+
+    let colorIndex = 0;
+    switch (color) {
+      case 'white':
+        colorIndex = 0;
+        break;
+      case 'black':
+        colorIndex = 1;
+        break;
+      case 'random':
+        colorIndex = Math.round(Math.random());
+        break;
+    }
+
+    this.playerColor = ['white', 'black'][colorIndex];
+  }
+
   onCreateGame() {
     console.log(this.gameForm.value);
 
@@ -82,7 +105,7 @@ export class JoinGameComponent implements OnInit {
     this.createGame(open, name, this.rules);
   }
 
-  // create a new game // TODO: add custom rules
+  // create a new game
   createGame(open: boolean, name: string | null, rules: any = null) {
     const userId = this.user.uid;
     if (!userId) {
@@ -106,7 +129,7 @@ export class JoinGameComponent implements OnInit {
       gameDoc = doc(gamesCollection, id);
 
       setDoc(gameDoc, {
-        players: [{id: userId, name: this.user.displayName}],
+        players: [{id: userId, name: this.user.displayName, color: this.playerColor}],
         moves: [],
         score: {white: 2, black: 2},
         status: {completed: false, open: open},
@@ -158,7 +181,9 @@ export class JoinGameComponent implements OnInit {
         const playerIds = data['players'].map(function(p:any) {return p['id'];});
 
         if (playerIds.indexOf(userId) === -1) {
-          data["players"].push({id: userId, name: this.user.displayName});
+          let color = data['players'][0].color === "black" ? "white" : "black";
+
+          data["players"].push({id: userId, name: this.user.displayName, color: color});
           data['status']["open"] = data["players"].length < 2;
   
           setDoc(gameDoc, data).then(() => {

@@ -123,12 +123,17 @@ button {
 
 form {
     width: 100%;
+    margin-top: .5rem;
 }
 
     form input[type="text"] {
         margin: auto;
         width: 100%;
     }
+
+h4 {
+    margin: 0;
+}
 
 .rulesPreset {
     align-items: stretch;

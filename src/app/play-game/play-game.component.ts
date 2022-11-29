@@ -25,7 +25,7 @@ export class PlayGameComponent implements OnInit {
 
   user: any;
 
-  opponent: { name: string, id: string };
+  opponent: { name: string, id: string, color: string };
   opponentColor: string;
   createdDelta: string = "";
   won: boolean | null = null;
@@ -621,7 +621,7 @@ export class PlayGameComponent implements OnInit {
         this.opponent = opponent;
 
         // get player's and opponent's color
-        this.playerColor = playerIds.indexOf(this.user?.uid) === 0 ? "white" : "black";
+        this.playerColor = this.data.players.find((player:any) => player.id === this.user?.uid).color;
         this.opponentColor = this.playerColor === "black" ? "white" : "black";
 
       // check if current user won

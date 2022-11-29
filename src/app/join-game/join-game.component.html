@@ -41,7 +41,21 @@
             <label for="gameName">Game name (optional)</label>
             <input type="text" id="gameName" name="gameName" formControlName="gameName" autocomplete="off" />
 
+            <form class="flex">
+                <div class="flex row rulesPreset mb-0">
+                    <span>Play as</span>
+
+                    <input type="radio" name="startColor" id="start-white" value="white" [(ngModel)]="startColor" (change)="changeStartColor($event)" >
+                    <label for="start-white">White</label>
+                    <input type="radio" name="startColor" id="start-black" value="black" [(ngModel)]="startColor" (change)="changeStartColor($event)" >
+                    <label for="start-black">Black</label>
+                    <input type="radio" name="startColor" id="start-random" value="random" [(ngModel)]="startColor" (change)="changeStartColor($event)" >
+                    <label for="start-random">Random</label>
+                </div>
+            </form>
+
             <h4>Rules</h4>
+
             <form class="flex">
                 <div class="flex row rulesPreset mb-0">
                     <input type="radio" name="rulesPreset" id="rules-othello" value="othello" [(ngModel)]="rulesPreset" (change)="changeRulesPreset($event)" >
