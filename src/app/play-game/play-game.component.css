@@ -271,8 +271,8 @@
             justify-content: flex-start;
             align-items: center;
             
-            width: 100%;
-            margin-left: 1.5rem;
+            /* width: 100%; */
+            padding-left: 1.5rem;
         }
 
         #player-names > span {
@@ -289,6 +289,23 @@
         #player-names > div > span {
             font-size: 1.7rem;
             font-weight: bold;
+        }
+
+        #player-names > div > .crown {
+            margin-left: auto;
+            justify-self: flex-end;
+            margin-right: 1.5rem;
+
+            width: 2rem;
+            height: 2rem;
+
+            fill: #f9d71c;
+
+            visibility: hidden;
+        }
+
+        #player-names > div > .crown.visible {
+            visibility: visible;
         }
 
     #timer-player {
