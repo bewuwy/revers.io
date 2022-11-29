@@ -301,8 +301,9 @@ export class PlayGameComponent implements OnInit {
       this.data.moves.push({ x: x, y: y, color: color });
 
       // check if board is full
-      const maxMoves = (this.boardSize * this.boardSize) - (this.data.rules.startingDisks * 4);
-      if (this.data.moves.length >= maxMoves) {
+      const maxDisks = this.boardSize * this.boardSize;
+      const currDisks = this.data.score['white'] + this.data.score['black'];
+      if (currDisks >= maxDisks) {
         this.setWinner();
       }
 
