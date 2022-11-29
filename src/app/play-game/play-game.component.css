@@ -1,9 +1,14 @@
-:host {
+#play {
+    margin-top: 2rem;
+
     display: flex;
-    flex-direction: column;
-    /* align-items: center; */
-    justify-content: center;
-    width: 100%;
+    flex-direction: row;
+}
+
+@media (min-width: 1024px) {
+    body {
+        width: 65vw;
+    }
 }
 
 #invite-container {
@@ -26,10 +31,6 @@
             margin-left: auto;
         }
     }
-
-#game-info p {
-    margin-top: 0;
-}
 
 #board-title {
     display: flex;
@@ -58,6 +59,27 @@
             }
         }
 
+#board-container {
+    display: flex;
+    flex-direction: column;
+}
+
+    /* @media (min-width: 768px) {
+        #board-container {
+            width: 70%;
+        }
+    }
+
+    @media (min-width: 1280px) {
+        #board-container {
+            width: 60%;
+        }
+    } */
+
+    #board-container h3 {
+        margin-top: 0;
+    }
+
 #board {
     display: flex;
     flex-direction: column;
@@ -67,35 +89,12 @@
 
     position: relative;
 
-    width: 100%;
+    width: auto;
+    /* height: 100%; */
+    height: 75vh;
     aspect-ratio: 1/1;
     align-self: center;
 }
-
-    #board-container {
-        align-self: center;
-        width: 100%;
-        aspect-ratio: 1/1;
-
-        display: flex;
-        flex-direction: column;
-    }
-
-        @media (min-width: 768px) { /* ! change the values also in .ts */
-            #board-container {
-                width: 70%;
-            }
-        }
-
-        @media (min-width: 1280px) {
-            #board-container {
-                width: 60%;
-            }
-        }
-
-        #board-container h3 {
-            margin-top: 0;
-        }
 
     .disabled {
         pointer-events: none;
@@ -153,76 +152,190 @@
         cursor: default;
     }
 
-#game-status {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    
-    width: 100%;
+#score {
     margin-top: .5rem;
 }
+ 
+    .score-bar {
+        /* border: 3px solid black; */
+        height: 1.5rem;
 
-    #game-status span {
         display: flex;
-        flex-direction: row;
         align-items: center;
         justify-content: center;
+        flex-direction: row;
     }
 
-        #game-status svg {
-            margin-left: .5rem;
-            margin-right: .5rem;
+        .player-score {
+            box-shadow: inset 0 0 3px black;
+            height: 100%;
+
+            display: flex;
+            align-items: center;
+
+            transition: all 1s;
         }
 
-    #game-status .give-up {
-        margin-left: auto;
-        justify-self: flex-end;
-    }
+            .player-score.white {
+                background-color: white;
+            }
 
-.score-bar {
-    /* border: 3px solid black; */
-    height: 1.5rem;
+            .player-score.black {
+                background-color: black;
+            }
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: row;
+            .player-score.player {
+                justify-content: flex-start;
+            }
+
+            .player-score.player span {
+                margin-left: .5rem;
+            }
+
+            .player-score.opponent {
+                justify-content: flex-end;
+            }
+
+            .player-score.black span {
+                color: white;
+            }
+
+#game-info {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 3fr 1fr;
+    row-gap: .5rem;
+    column-gap: .5rem;
+
+    width: 100%;
+    /* width: 30%; */
+    /* margin-top: 10rem;
+    margin-bottom: 10rem; */
+    margin-top: auto;
+    margin-bottom: auto;
+    height: 30%;
+    margin-left: 4rem;
+
+    position: relative;
+    top: -3rem;
 }
 
-    .player-score {
-        box-shadow: inset 0 0 3px black;
-        height: 100%;
+    #game-info > div {
+        background-color: #0e86e9;
+        color: white;
 
-        display: flex;
-        align-items: center;
-
-        transition: all 1s;
+        border: none;
+        border-radius: .75rem;    
     }
 
-        .player-score.white {
-            background-color: white;
+    #game-result {
+        grid-row: 1;
+        grid-column-start: 1;
+        grid-column-end: 3;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+    }
+
+        #game-result > span {
+            text-align: center;
+
+            font-weight: bold;
+            font-size: 1.2rem;
         }
 
-        .player-score.black {
-            background-color: black;
-        }
+    #timer-enemy {
+        grid-column: 3;
+        grid-row: 1;
+    }
 
-        .player-score.player {
+    #player-names {
+        grid-row: 2;
+        grid-column-start: 1;
+        grid-column-end: 4;
+
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+        row-gap: .5rem;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+    }
+
+        #player-names > div {
+            display: flex;
+            flex-direction: row;
             justify-content: flex-start;
+            align-items: center;
+            
+            width: 100%;
+            margin-left: 1.5rem;
         }
 
-        .player-score.player span {
-            margin-left: .5rem;
+        #player-names > span {
+            align-self: center;
         }
 
-        .player-score.opponent {
-            justify-content: flex-end;
+        #player-names > div > .disk {
+            width: 3.5rem;
+            height: 3.5rem;
+
+            margin-right: .75rem;
         }
 
-        .player-score.black span {
-            color: white;
+        #player-names > div > span {
+            font-size: 1.7rem;
+            font-weight: bold;
         }
+
+    #timer-player {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    #game-controls {
+        grid-row: 3;
+        grid-column-start: 2;
+        grid-column-end: 4;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+
+        #game-controls > svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin: .5rem;
+            fill: white;
+        }
+
+        #game-controls > span {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        #game-controls > * {
+            cursor: pointer;
+        }
+
+    .timer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+
+    #game-info > .timer.dim {
+        /* dim the background */
+        background-color: #1970cd;
+    }
 
 .disk {
     width: 90%;
@@ -257,61 +370,6 @@
         100% {
             transform: rotateY(180deg);
         }
-    }
-
-@keyframes roll {
-    0% {
-        transform: rotate(0deg);
-    }
-    30% {
-        transform: rotate(180deg);
-    }
-    60% {
-        transform: rotate(360deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-    .rolling {
-        animation: roll 2.7s ease-in-out infinite;
-        animation-delay: 1s;
-    }
-
-@keyframes ring {
-    0% {
-        transform: rotate(0deg);
-    }
-    10% {
-        transform: rotate(30deg);
-    }
-    20% {
-        transform: rotate(-25deg);
-    }
-    30% {
-        transform: rotate(20deg);
-    }
-    40% {
-        transform: rotate(-15deg);
-    }
-    50% {
-        transform: rotate(10deg);
-    }
-    60% {
-        transform: rotate(-5deg);
-    }
-    70% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(0deg);
-    }
-}
-
-    .ringing {
-        animation: ring 3s ease-in-out infinite;
-        animation-delay: .7s;
     }
 
 p > svg {

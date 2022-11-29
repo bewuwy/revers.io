@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, increment, arrayRemove, FieldValue } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,7 +11,8 @@ import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-play-game',
   templateUrl: './play-game.component.html',
-  styleUrls: ['./play-game.component.css']
+  styleUrls: ['./play-game.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 
 export class PlayGameComponent implements OnInit {
@@ -21,13 +22,13 @@ export class PlayGameComponent implements OnInit {
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
   started: boolean = false;
   online: boolean = true;
-  timesLoaded: number = 0;
+  // // timesLoaded: number = 0;
 
   user: any;
 
   opponent: { name: string, id: string, color: string };
   opponentColor: string;
-  createdDelta: string = "";
+  // createdDelta: string = "";
   won: boolean | null = null;
   resultShown: boolean = false;
 
@@ -44,10 +45,6 @@ export class PlayGameComponent implements OnInit {
   bellRing:HTMLAudioElement = new Audio();
   winEffect: HTMLAudioElement = new Audio();
   loseEffect: HTMLAudioElement = new Audio();
-
-  // layout settings
-  boardWidth: number | undefined;
-  boardWidthResetShow: boolean = false;
 
   // constructor
   constructor(private db: Firestore, private auth: Auth, 
@@ -254,6 +251,10 @@ export class PlayGameComponent implements OnInit {
   }
 
   putDisk(y: number, x: number, user: boolean, color?: string) {
+    if (x < 0 || y < 0) {
+      return;
+    }
+
     // check if game started
     if (user && !this.opponent.id) {
       console.log("game not started");
@@ -561,14 +562,6 @@ export class PlayGameComponent implements OnInit {
         return;
       }
 
-      // check if game is over when just loaded
-      if (this.timesLoaded === 0 && this.data.status.completed) { 
-        this.valid.valid = false;
-        this.valid.reason = "This game has ended";
-
-        return;
-      }
-
       // recreate moves on board
       console.log("recreate", this.data.moves.length-this.localMoves.length, "moves on board");
       for (let i = 0; i < this.data.moves.length; i++) {
@@ -643,6 +636,7 @@ export class PlayGameComponent implements OnInit {
         }
 
         // update current user's win stats (if not guest)
+        // TODO: update stats only once!
         if (!this.user.uid.toString().startsWith("guest-")) {
           let lost = 0;
           if (!this.won && this.data.winner !== "tie") {
@@ -663,9 +657,9 @@ export class PlayGameComponent implements OnInit {
         }
       }
 
-      // get game's creation date
-        this.data.created = new Date(this.data.created.seconds * 1000);
-        this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format    
+      // // get game's creation date
+      //   this.data.created = new Date(this.data.created.seconds * 1000);
+      //   this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes";    
 
       // decide on turn, get legal moves
       if (this.data && !this.data.status.completed) {
@@ -712,66 +706,7 @@ export class PlayGameComponent implements OnInit {
       }
 
       // console.log("data: ", doc.data());
-      this.timesLoaded++;
+      // // this.timesLoaded++;
     });
   }
-
-  ngOnDestroy(): void {
-    if (!this.data) {
-      return;
-    }
-  
-    // delete game if there is only one player left
-    if (this.data.players.length === 1) {
-      deleteDoc(doc(collection(this.db, 'games'), this.gameId));
-    }
-
-    // remove current user from game if it has finished
-    if (this.data.status.completed) {
-      const playerIds = this.data.players.map((player:any) => player.id);
-      this.data.players.splice(playerIds.indexOf(this.user?.uid), 1);
-
-      // update game doc
-      const gamesCollection = collection(this.db, 'games');
-      const gameDoc = doc(gamesCollection, this.gameId);
-
-      updateDoc(gameDoc, { players: this.data.players });
-    }
-  }
-
-  // layout settings
-
-  // board width
-    getBoardWidth() {
-      this.boardWidth = 100;
-
-      if ((window.innerWidth) >= 768) {
-        this.boardWidth = 70;
-      }
-      if ((window.innerWidth) >= 1280) {
-        this.boardWidth = 60;
-      }
-    }
-
-    onDecrBoardWidth() {
-      if (!this.boardWidth) { this.boardWidth=0; this.getBoardWidth(); }
-      if (this.boardWidth < 45) { return }
-
-      this.boardWidth -= 5;
-      this.boardWidthResetShow = true;
-    }
-
-    onIncrBoardWidth() {
-      if (!this.boardWidth) { this.boardWidth=0; this.getBoardWidth(); }
-      if (this.boardWidth > 95) { return }
-
-      this.boardWidth += 5;
-      this.boardWidthResetShow = true;
-    }
-
-    onResetBoardWidth() {
-      this.boardWidth = undefined;
-      this.boardWidthResetShow = false;
-    }
-
 }
