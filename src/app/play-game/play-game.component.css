@@ -3,11 +3,11 @@
     --black: #000;
 }
 
-/* @media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: dark) {
     :root {
         --white: #f6f6d2;
     }
-} */
+}
 
 #play {
     margin-top: 2rem;
