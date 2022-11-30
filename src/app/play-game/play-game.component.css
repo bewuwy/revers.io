@@ -293,6 +293,41 @@ body {
         fill: white;
     }
 
+        @keyframes jumping {
+            0% {
+                top: 0;
+            }
+            20% {
+                top: 0;
+            }
+            50% {
+                top: -.5rem;
+            }
+            80% {
+                top: 0;
+            }
+            100% {
+                top: 0rem;
+            }
+        }
+
+        #rematch.jumping {
+            background-color: #FF931F;
+        }
+
+        @media (min-width: 768px) {
+        
+            #rematch.jumping {
+                position: relative;
+                animation-delay: .5s;
+                animation: jumping 1.2s ease-in-out infinite alternate;
+            }
+        }
+
+        #rematch.sent {
+            background-color: #45B053;
+        }
+
     #timer-enemy {
         grid-column: 3;
         grid-row: 1;
@@ -360,16 +395,11 @@ body {
 
             width: 2rem;
             height: 2rem;
+            margin-right: .5rem;
 
             fill: #f9d71c;
             visibility: hidden;
         }
-
-            @media (min-width: 1024px) {
-                #player-names > div > .crown {
-                    margin-right: 1.5rem;
-                }
-            }
 
         #player-names > div > .crown.visible {
             visibility: visible;
@@ -418,7 +448,7 @@ body {
 
     #game-info > .timer.dim {
         /* dim the background */
-        background-color: #1970cd;
+        background-color: #174f89;
     }
 
 .disk {

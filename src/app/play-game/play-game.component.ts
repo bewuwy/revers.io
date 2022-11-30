@@ -31,6 +31,8 @@ export class PlayGameComponent implements OnInit {
   // createdDelta: string = "";
   won: boolean | null = null;
   resultShown: boolean = false;
+  waitingRematch: boolean = false;
+  rematchSent: boolean = false;
 
   boardSize: number;
   board: string[][] = [];
@@ -453,6 +455,8 @@ export class PlayGameComponent implements OnInit {
     this.localMoves = [];
     this.resultShown = false;
     this.won = false;
+    this.waitingRematch = false;
+    this.rematchSent = false;
 
     // create this.board
     for (let i = 0; i < this.boardSize; i++) {
@@ -499,11 +503,11 @@ export class PlayGameComponent implements OnInit {
 
     if (!this.data.rematch || this.data.rematch.length < 1) {
       this.toastr.success("Rematch request sent");
+      this.rematchSent = true;
     }
-    // else {
-    //   this.toastr.success("Rematch accepted");
-    // }
 
+    this.waitingRematch = true;
+    
     if (!this.data.rematch.includes(this.user.uid)) {
       this.data.rematch.push(this.user.uid);
     }
@@ -678,9 +682,18 @@ export class PlayGameComponent implements OnInit {
         this.opponentColor = this.playerColor === "black" ? "white" : "black";
 
       // check if opponent wants to rematch
-      if (this.data.rematch && this.data.rematch.includes(this.opponent.id) && !this.stopRecreate) {
-        this.toastr.warning("Opponent wants to rematch");
+      if (this.data.rematch) {
+        if (this.data.rematch.includes(this.opponent.id) && !this.stopRecreate) {
+          this.toastr.warning("Opponent wants to rematch");
+        }
+        if (this.data.rematch.length > 0) {
+          this.waitingRematch = true;
+        }
+        if (this.data.rematch.includes(this.user.uid)) {
+          this.rematchSent = true;
+        }
       }
+
 
       // check if current user won
       if (this.data.status.completed && !this.resultShown && !this.stopRecreate) {
