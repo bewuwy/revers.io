@@ -483,7 +483,7 @@ export class PlayGameComponent implements OnInit {
   }
 
   onGiveUp() {
-    if (!this.started) {
+    if (!this.started || this.data.status.completed) {
       return;
     }
 

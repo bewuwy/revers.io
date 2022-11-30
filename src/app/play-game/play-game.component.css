@@ -253,7 +253,7 @@ body {
 
     @media (min-width: 1024px) {
         #game-info {
-            max-width: 25vw;
+            width: 25vw;
             
             margin-top: auto;
 
@@ -291,6 +291,9 @@ body {
 
         border-radius: .75rem;
         fill: white;
+
+        transition-property: background-color;
+        transition-duration: .5s;
     }
 
         @keyframes jumping {
