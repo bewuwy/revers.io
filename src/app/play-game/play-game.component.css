@@ -3,11 +3,22 @@
 
     display: flex;
     flex-direction: row;
+    justify-content: center;
 }
 
-@media (min-width: 1024px) {
+body {
+    width: 90vw;
+}
+
+@media (min-width: 1280px) {
     body {
-        width: 65vw;
+        width: 80vw;
+    }
+}
+
+@media (min-width: 1536px) {
+    body {
+        min-width: 65vw;
     }
 }
 
@@ -209,17 +220,24 @@
     column-gap: .5rem;
 
     width: 100%;
+    max-width: 25vw;
     /* width: 30%; */
     /* margin-top: 10rem;
     margin-bottom: 10rem; */
     margin-top: auto;
     margin-bottom: auto;
+    margin-left: 1.5rem;
     height: 30%;
-    margin-left: 4rem;
 
     position: relative;
     top: -3rem;
 }
+
+    @media (min-width: 1280px) {
+        #game-info {
+            margin-left: 4rem;
+        }
+    }
 
     #game-info > div {
         background-color: #0e86e9;
@@ -272,7 +290,15 @@
             align-items: center;
             
             /* width: 100%; */
-            padding-left: 1.5rem;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            #player-names > div {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
         }
 
         #player-names > span {
@@ -289,6 +315,14 @@
         #player-names > div > span {
             font-size: 1.7rem;
             font-weight: bold;
+        }
+
+        #player-names > div > button {
+            font-weight: bold;
+            font-size: 1.3rem;
+
+            justify-self: center;
+            margin: auto;
         }
 
         #player-names > div > .crown {

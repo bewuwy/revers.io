@@ -479,6 +479,10 @@ export class PlayGameComponent implements OnInit {
   }
 
   onGiveUp() {
+    if (!this.data.status.completed) {
+      return;
+    }
+
     this.data.status.completed = true;
     this.data.winner = this.opponent.id;
     this.data.moves.push({ x: -2, y: -2, color: this.playerColor });
