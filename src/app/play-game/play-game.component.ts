@@ -360,7 +360,7 @@ export class PlayGameComponent implements OnInit {
   // push data to firebase
   pushTurn() {
     console.log("trying to push turn");
-    console.log(this.data);
+    // console.log(this.data);
 
     setDoc(doc(collection(this.db, 'games'), this.gameId), this.data).then(() => {
       console.log("turn synced");
@@ -479,7 +479,7 @@ export class PlayGameComponent implements OnInit {
   }
 
   onGiveUp() {
-    if (!this.data.status.completed) {
+    if (!this.started) {
       return;
     }
 

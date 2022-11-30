@@ -6,7 +6,7 @@
     justify-content: center;
 }
 
-    @media (min-width: 1024px) {
+    @media (min-width: 768px) {
         #play {
             flex-direction: row;
         }
@@ -111,10 +111,16 @@ body {
     width: 100%;
 }
 
+    @media (min-width: 768px) {
+        #board {
+            height: 50vh;
+            width: auto;
+        }
+    }
+
     @media (min-width: 1024px) {
         #board {
             height: 75vh;
-            width: auto;
         }
     }
 
@@ -351,15 +357,19 @@ body {
         #player-names > div > .crown {
             margin-left: auto;
             justify-self: flex-end;
-            margin-right: 1.5rem;
 
             width: 2rem;
             height: 2rem;
 
             fill: #f9d71c;
-
             visibility: hidden;
         }
+
+            @media (min-width: 1024px) {
+                #player-names > div > .crown {
+                    margin-right: 1.5rem;
+                }
+            }
 
         #player-names > div > .crown.visible {
             visibility: visible;
