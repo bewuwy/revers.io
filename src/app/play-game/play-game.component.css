@@ -1,3 +1,14 @@
+:root {
+    --white: #fff;
+    --black: #000;
+}
+
+/* @media (prefers-color-scheme: dark) {
+    :root {
+        --white: #f6f6d2;
+    }
+} */
+
 #play {
     margin-top: 2rem;
 
@@ -79,6 +90,8 @@ body {
 #board-container {
     display: flex;
     flex-direction: column;
+
+    width: min-content;
 }
 
     /* @media (min-width: 768px) {
@@ -187,8 +200,8 @@ body {
     .score-bar {
         /* border: 3px solid black; */
         height: 1.5rem;
-
         display: flex;
+
         align-items: center;
         justify-content: center;
         flex-direction: row;
@@ -200,20 +213,31 @@ body {
 
             display: flex;
             align-items: center;
+            position: relative;
 
             transition: all 1s;
         }
 
-            .player-score.white {
-                background-color: white;
+            .player-score > svg {
+                width: 100%;
+                z-index: -1;
             }
 
-            .player-score.black {
-                background-color: black;
+            .player-score > span {
+                position: absolute;
+                right: 0;
             }
 
-            .player-score.player {
-                justify-content: flex-start;
+            .player-score.white > svg {
+                fill: var(--white);
+            }
+
+            .player-score.black > svg {
+                fill: var(--black);
+            }
+
+            .player-score.player > span {
+                left: 0;
             }
 
             .player-score.player span {
@@ -457,8 +481,8 @@ body {
 .disk {
     width: 90%;
     height: 90%;
-    border-radius: 50%;
-    /* background-color: red; */
+    /* border-radius: 50%; */
+
     font-size: 30px;
     line-height: 50px;
     /* cursor: pointer; */
@@ -470,10 +494,12 @@ body {
 }
 
     .white {
-        background-color: white;
+        /* background-color: var(--white); */
+        fill: var(--white);
     }
     .black {
-        background-color: black;
+        /* background-color: var(--black); */
+        fill: var(--black);
     }
 
     .highlight {
