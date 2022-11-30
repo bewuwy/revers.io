@@ -515,6 +515,11 @@ export class PlayGameComponent implements OnInit {
     this.pushTurn();
 
     if (this.data.rematch.length === 2) {
+      if (Math.random() > 0.5) {
+        this.data.players[0].color = this.data.players[0].color === "black" ? "white" : "black";
+        this.data.players[1].color = this.data.players[1].color === "black" ? "white" : "black";
+      }
+
       this.data.rematch = [];
 
       this.data.status.completed = false;
