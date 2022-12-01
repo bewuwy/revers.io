@@ -5,6 +5,8 @@ import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, i
 import { ActivatedRoute, Router } from '@angular/router';
 import { fromEvent, map, merge, Observable, Observer } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { interval } from 'rxjs';
+
 
 // TODO: play without an account
 
@@ -39,6 +41,8 @@ export class PlayGameComponent implements OnInit {
   flip: boolean[][] = [];
   legalMove: boolean[][] = [];
   lastPlaced: {y: number, x: number} = {y: -1, x: -1};
+  lastMoveTime: Date | undefined;
+  timer: {player: number, opponent: number} = {player: 180, opponent: 180};
 
   playerColor: string = "";
   playerTurn: boolean;
@@ -46,7 +50,7 @@ export class PlayGameComponent implements OnInit {
   stopRecreate: boolean = false;
 
   // audio effects
-  bellRing:HTMLAudioElement = new Audio();
+  bellRing: HTMLAudioElement = new Audio();
   winEffect: HTMLAudioElement = new Audio();
   loseEffect: HTMLAudioElement = new Audio();
 
@@ -305,7 +309,20 @@ export class PlayGameComponent implements OnInit {
         this.data.score[color]++;
       }
 
-      this.data.moves.push({ x: x, y: y, color: color });
+      let moveTime = new Date();
+
+      this.data.moves.push({y: y, x: x, color: color});
+
+      let sinceLastMove = 0;
+      if (this.data.moves.length > 1) {
+        sinceLastMove = moveTime.getTime() - this.data.lastMoveTimes[color].seconds * 1000;
+      }
+
+      console.log("since player's last move: " + sinceLastMove/1000 + "s");
+
+      // update last move time
+      this.data.lastMoveTimes[color] = moveTime;
+
 
       // check if board is full
       const maxDisks = this.boardSize * this.boardSize;
@@ -480,10 +497,30 @@ export class PlayGameComponent implements OnInit {
     }
 
     this.stopRecreate = false;
+
+    this.data.lastMoveTimes = {
+      'white': 0,
+      'black': 0,
+    }
+
+    // start timer
+    interval(1000).subscribe(x => {
+
+      if (!this.started) {
+        return;
+      }
+
+      if (this.playerTurn && this.timer.player > 0) {
+        this.timer.player -= 1;
+      } 
+      else if (this.timer.opponent > 0) {
+        this.timer.opponent -= 1;
+      }
+    });
   }
 
   onGiveUp() {
-    if (!this.started || this.data.status.completed) {
+    if (!this.started || this.data.players.length < 2 || this.data.status.completed) {
       return;
     }
 
@@ -537,7 +574,13 @@ export class PlayGameComponent implements OnInit {
     this.stopRecreate = true;
   }
 
+  getMinutes(s: number) {
+    return(s-(s%=60))/60+(9<s?':':':0')+s
+  }
+
   ngOnInit(): void {
+    console.log(new Date());
+
     // online checker
     this.createOnline$().subscribe((isOnline:any) => {
       if (this.online && !isOnline) {
