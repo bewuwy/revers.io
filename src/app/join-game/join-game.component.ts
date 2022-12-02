@@ -21,6 +21,7 @@ export class JoinGameComponent implements OnInit {
   gameForm = new FormGroup({
     gameOpen: new FormControl(true, {nonNullable: true}),
     gameName: new FormControl('', {nonNullable: false}),
+    timerValue: new FormControl(3, {nonNullable: true}),
   });
 
   joinGameForm = new FormGroup({
@@ -36,6 +37,7 @@ export class JoinGameComponent implements OnInit {
   rules = { boardSize: 8, loseNoMove: false, startingDisks: true };
   rulesPreset:string = 'othello';
   startColor:string = 'random';
+  timerEnabled: boolean = false;
   playerColor:string = 'white';
   openGame: boolean = true;
 
@@ -128,6 +130,11 @@ export class JoinGameComponent implements OnInit {
       // create game
       gameDoc = doc(gamesCollection, id);
 
+      let timer = -2;
+      if (this.gameForm.value && this.gameForm.value.timerValue && this.timerEnabled) {
+        timer = this.gameForm.value.timerValue * 60;
+      }
+
       setDoc(gameDoc, {
         players: [{id: userId, name: this.user.displayName, color: this.playerColor}],
         moves: [],
@@ -136,7 +143,7 @@ export class JoinGameComponent implements OnInit {
         winner: null,
         created: new Date(),
         rules: rules,
-        timer: {white: 180, black: 180},
+        timer: {white: timer, black: timer},
       }).then(() => {
         console.log("created game", id);
 
