@@ -24,7 +24,6 @@ export class PlayGameComponent implements OnInit {
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
   started: boolean = false;
   online: boolean = true;
-  // // timesLoaded: number = 0;
 
   user: any;
 
@@ -42,7 +41,7 @@ export class PlayGameComponent implements OnInit {
   legalMove: boolean[][] = [];
   lastPlaced: {y: number, x: number} = {y: -1, x: -1};
   lastMoveTime: Date | undefined;
-  timer: {player: number, opponent: number} = {player: 180, opponent: 180};
+  timer: {player: number, opponent: number} = {player: -1, opponent: -1};
 
   playerColor: string = "";
   playerTurn: boolean;
@@ -309,20 +308,7 @@ export class PlayGameComponent implements OnInit {
         this.data.score[color]++;
       }
 
-      let moveTime = new Date();
-
       this.data.moves.push({y: y, x: x, color: color});
-
-      let sinceLastMove = 0;
-      if (this.data.moves.length > 1) {
-        sinceLastMove = moveTime.getTime() - this.data.lastMoveTimes[color].seconds * 1000;
-      }
-
-      console.log("since player's last move: " + sinceLastMove/1000 + "s");
-
-      // update last move time
-      this.data.lastMoveTimes[color] = moveTime;
-
 
       // check if board is full
       const maxDisks = this.boardSize * this.boardSize;
@@ -376,10 +362,47 @@ export class PlayGameComponent implements OnInit {
     this.pushTurn();
   }
 
+  updateTimer() {
+    if (this.data.status.completed) { return; }
+
+    const currTime = new Date();
+  
+    let player_timer = this.data.timer[this.playerColor];
+    let opponent_timer = this.data.timer[this.opponentColor];
+
+    if (this.data.lastMoveTime) {
+      const timeSinceLastMove = (currTime.getTime() - this.data.lastMoveTime.seconds * 1000)/1000;
+
+      if (this.playerTurn) {
+        player_timer -= timeSinceLastMove;
+      }
+      else {
+        opponent_timer -= timeSinceLastMove;
+      }
+
+      console.log("since", timeSinceLastMove);
+    }
+
+    player_timer = Math.round(player_timer);
+    opponent_timer = Math.round(opponent_timer);
+
+    // set timer
+    this.timer = {
+      'player': player_timer,
+      'opponent': opponent_timer,
+    }
+  }
+
   // push data to firebase
   pushTurn() {
     console.log("trying to push turn");
     // console.log(this.data);
+
+    this.data.lastMoveTime = new Date();
+
+    if (this.data.moves[this.data.moves.length-1].color === this.playerColor) {
+      this.data.timer[this.playerColor] = this.timer.player; 
+    }
 
     setDoc(doc(collection(this.db, 'games'), this.gameId), this.data).then(() => {
       console.log("turn synced");
@@ -498,24 +521,14 @@ export class PlayGameComponent implements OnInit {
 
     this.stopRecreate = false;
 
-    this.data.lastMoveTimes = {
-      'white': 0,
-      'black': 0,
-    }
-
     // start timer
     interval(1000).subscribe(x => {
 
-      if (!this.started) {
+      if (!this.started || this.data.players.length < 2) {
         return;
       }
 
-      if (this.playerTurn && this.timer.player > 0) {
-        this.timer.player -= 1;
-      } 
-      else if (this.timer.opponent > 0) {
-        this.timer.opponent -= 1;
-      }
+      this.updateTimer();
     });
   }
 
@@ -575,6 +588,10 @@ export class PlayGameComponent implements OnInit {
   }
 
   getMinutes(s: number) {
+    if (s < 0) {
+      return "0:00";
+    }
+
     return(s-(s%=60))/60+(9<s?':':':0')+s
   }
 
@@ -832,7 +849,6 @@ export class PlayGameComponent implements OnInit {
       }
 
       // console.log("data: ", this.data);
-      // // this.timesLoaded++;
     });
   }
 }

@@ -135,7 +135,8 @@ export class JoinGameComponent implements OnInit {
         status: {completed: false, open: open},
         winner: null,
         created: new Date(),
-        rules: rules
+        rules: rules,
+        timer: {white: 180, black: 180},
       }).then(() => {
         console.log("created game", id);
 
