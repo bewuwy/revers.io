@@ -24,10 +24,6 @@ app-root {
     width: 100%;
 }
 
-div > span {
-    margin-right: .25em;
-}
-
 form {
     display: flex;
     flex-direction: column;

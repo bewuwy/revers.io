@@ -199,3 +199,7 @@ h4 {
             display: flex;
         }
     }
+
+div > span {
+    margin-right: .25em;
+}

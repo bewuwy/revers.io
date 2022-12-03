@@ -248,6 +248,10 @@ body {
                 justify-content: flex-end;
             }
 
+            .player-score.opponent > span {
+                margin-right: .5rem;
+            }
+
             .player-score.black span {
                 color: white;
             }
@@ -465,17 +469,53 @@ body {
         }
 
     .timer {
-        display: flex;
+        display: none;
+        gap: 0.5rem;
         align-items: center;
         justify-content: center;
 
         font-weight: bold;
         font-size: 1.5rem;
+
+        fill: white;
+        padding-left: .5rem;
+        padding-right: .5rem;
+    }
+
+    .timer-show {
+        display: flex !important;
+    }
+
+    .timer > svg {
+        display: none;
+        animation: tick 3s infinite ease-out;
+    }
+
+    .timer > span {
+        display: none;
+    }
+
+    .block {
+        display: block !important;
+    }
+
+    @keyframes tick {
+        0% {
+            rotate: 0;
+        }
+        10% {
+            rotate: 0;
+        }
+        100% {
+            rotate: 360deg;
+        }
     }
 
     #game-info > .timer.dim {
         /* dim the background */
         background-color: #174f89;
+        color: #E1D9D1;
+        fill: #E1D9D1;
     }
 
 .disk {

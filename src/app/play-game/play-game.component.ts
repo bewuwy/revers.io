@@ -34,6 +34,7 @@ export class PlayGameComponent implements OnInit {
   resultShown: boolean = false;
   waitingRematch: boolean = false;
   rematchSent: boolean = false;
+  showTimer: boolean = false;
 
   boardSize: number;
   board: string[][] = [];
@@ -758,6 +759,8 @@ export class PlayGameComponent implements OnInit {
         // start game if not started
         this.startGame();
         this.started = true;
+        
+        this.showTimer = this.data.rules.time > 0;
       }
 
       this.user = this.auth.currentUser;
