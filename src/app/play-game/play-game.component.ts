@@ -42,6 +42,7 @@ export class PlayGameComponent implements OnInit {
   lastPlaced: {y: number, x: number} = {y: -1, x: -1};
   lastMoveTime: Date | undefined;
   timer: {player: number, opponent: number} = {player: -1, opponent: -1};
+  timerSet: boolean = false;
 
   playerColor: string = "";
   playerTurn: boolean;
@@ -362,13 +363,30 @@ export class PlayGameComponent implements OnInit {
     this.pushTurn();
   }
 
-  updateTimer() {
-    if (this.data.status.completed) { return; }
+  updateTimer(force: boolean = false) {
+    if (this.data.moves.length > 0 && this.data.moves[this.data.moves.length-1].x === -3) { 
+    
+      if (this.data.moves[this.data.moves.length-1].color === this.playerColor) {
+        this.timer.player = 0;
+        // this.playerTurn = true;
+      }
+      else {
+        this.timer.opponent = 0;
+        // this.playerTurn = false;
+      }
+    }
+
+    if (this.data.status.completed && this.timerSet && !force) { return; }
+
+    // console.log("update timer");
 
     const currTime = new Date();
   
     let player_timer = this.data.timer[this.playerColor];
     let opponent_timer = this.data.timer[this.opponentColor];
+
+    // console.log("player timer: " + player_timer);
+    // console.log("opponent timer: " + opponent_timer);
 
     if (this.data.lastMoveTime) {
       const timeSinceLastMove = (currTime.getTime() - this.data.lastMoveTime.seconds * 1000)/1000;
@@ -380,7 +398,7 @@ export class PlayGameComponent implements OnInit {
         opponent_timer -= timeSinceLastMove;
       }
 
-      console.log("since", timeSinceLastMove);
+      // console.log("since", timeSinceLastMove);
     }
 
     player_timer = Math.round(player_timer);
@@ -391,6 +409,20 @@ export class PlayGameComponent implements OnInit {
       'player': player_timer,
       'opponent': opponent_timer,
     }
+
+    // console.log('timer', this.timer);
+
+    // check if player ran out of time
+    if (player_timer <= 0 && !this.data.status.completed) {
+      this.data.status.completed = true;
+      this.data.winner = this.opponent.id;
+      this.data.moves.push({ x: -3, y: -3, color: this.playerColor });
+      this.won = false;
+
+      this.toastr.error("You ran out of time!", "Game Over");
+      
+      this.pushTurn();
+    }
   }
 
   // push data to firebase
@@ -400,7 +432,10 @@ export class PlayGameComponent implements OnInit {
 
     this.data.lastMoveTime = new Date();
 
-    if (this.data.moves[this.data.moves.length-1].color === this.playerColor) {
+    console.log('moves');
+    console.log(this.data.moves);
+
+    if (this.data.moves.length > 0 && this.data.moves[this.data.moves.length-1].color === this.playerColor) {
       this.data.timer[this.playerColor] = this.timer.player; 
     }
 
@@ -576,7 +611,12 @@ export class PlayGameComponent implements OnInit {
       this.data.winner = "";
       this.data.moves = [];
       this.data.score = { white: this.data.rules.startingDisks * 2, black: this.data.rules.startingDisks * 2 };
+      this.data.timer = { white: this.data.rules.time, black: this.data.rules.time };
+      this.data.lastMoveTime = new Date().getTime() + 10^4;
       this.won = null;
+
+      this.waitingRematch = false;
+      this.rematchSent = false;
 
       this.pushTurn();
 
@@ -727,6 +767,10 @@ export class PlayGameComponent implements OnInit {
   
             break;
           }
+
+          if (move.x < 0) {
+            break;
+          }
   
           this.putDisk(move.y, move.x, false, move.color);
         }
@@ -745,6 +789,12 @@ export class PlayGameComponent implements OnInit {
         // get player's and opponent's color
         this.playerColor = this.data.players.find((player:any) => player.id === this.user?.uid).color;
         this.opponentColor = this.playerColor === "black" ? "white" : "black";
+
+      // update timer
+      if (!this.timerSet) {
+        this.updateTimer();
+        this.timerSet = true;
+      }
 
       // check if opponent wants to rematch
       if (this.data.rematch) {
@@ -840,11 +890,19 @@ export class PlayGameComponent implements OnInit {
           }
         }
       }
-      else { // game is over, set all moves to illegal
+      else { 
+        // game is over, set all moves to illegal
         for (let i = 0; i < this.board.length; i++) {
           for (let j = 0; j < this.board[i].length; j++) {
             this.legalMove[i][j] = false;
           }
+        }
+
+        if (this.data.moves[this.data.moves.length-1].x === -3 && this.data.moves[this.data.moves.length-1].y === -3) {
+          console.log('last move was a time-out');
+          this.playerTurn = this.data.moves[this.data.moves.length-1].color === this.playerColor;
+
+          this.updateTimer(true);
         }
       }
 

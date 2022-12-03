@@ -37,7 +37,7 @@ export class JoinGameComponent implements OnInit {
   rules = { boardSize: 8, loseNoMove: false, startingDisks: true };
   rulesPreset:string = 'othello';
   startColor:string = 'random';
-  timerEnabled: boolean = false;
+  timerEnabled: boolean = true;
   playerColor:string = 'white';
   openGame: boolean = true;
 
@@ -90,7 +90,7 @@ export class JoinGameComponent implements OnInit {
   }
 
   onCreateGame() {
-    console.log(this.gameForm.value);
+    // console.log(this.gameForm.value);
 
     let open = this.gameForm.value.gameOpen;
     if (open === undefined) {
@@ -131,9 +131,11 @@ export class JoinGameComponent implements OnInit {
       gameDoc = doc(gamesCollection, id);
 
       let timer = -2;
-      if (this.gameForm.value && this.gameForm.value.timerValue && this.timerEnabled) {
+      if (this.gameForm.value.timerValue && this.timerEnabled) {
         timer = this.gameForm.value.timerValue * 60;
       }
+
+      rules['time'] = timer;
 
       setDoc(gameDoc, {
         players: [{id: userId, name: this.user.displayName, color: this.playerColor}],
