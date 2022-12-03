@@ -325,7 +325,7 @@ export class PlayGameComponent implements OnInit {
 
       this.pushTurn();
 
-      this.currentBoardState += 1;        
+      this.currentBoardState += 1;
       this.boardStates.push(JSON.parse(JSON.stringify(this.board)));
       this.lastPlacedStates.push(JSON.parse(JSON.stringify(this.lastPlaced)));
       this.setBoard(this.currentBoardState);
@@ -796,12 +796,13 @@ export class PlayGameComponent implements OnInit {
         this.toastr.success("Rematch accepted");
       }
 
+      if (this.boardStates.length === 0) {
+        this.displayBoard = JSON.parse(JSON.stringify(this.board));
+        this.currentBoardState = -1;
+      }
+
       if (!this.stopRecreate) {
         for (let i = 0; i < this.data.moves.length; i++) {
-          if (this.boardStates.length === 0) {
-            this.displayBoard = JSON.parse(JSON.stringify(this.board));
-          }
-
           const move = this.data.moves[i];
           // if move already on local board, skip
           const localMove = this.localMoves[i];
