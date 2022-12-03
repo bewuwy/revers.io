@@ -592,6 +592,10 @@ export class PlayGameComponent implements OnInit {
         this.updateTimer();
       });
     }
+
+    // update display board
+    this.displayBoard = JSON.parse(JSON.stringify(this.board));
+    this.currentBoardState = -1;
   }
 
   onGiveUp() {
