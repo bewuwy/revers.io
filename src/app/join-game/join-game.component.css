@@ -121,6 +121,22 @@ button {
         width: fit-content;
     }
 
+#timer-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+    #timer-input > label {
+        margin: auto;
+    }
+
+    #timer-input > input {
+        margin-left: 1.2rem;
+        margin-right: 1.2rem;
+    }
+
 form {
     width: 100%;
     margin-top: .5rem;
@@ -183,3 +199,7 @@ h4 {
             display: flex;
         }
     }
+
+div > span {
+    margin-right: .25em;
+}

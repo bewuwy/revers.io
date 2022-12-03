@@ -11,9 +11,6 @@ body {
     font-family: 'Roboto', sans-serif;
 
     margin: auto;
-}
-
-body {
     width: 80vw;
 }
 
@@ -25,10 +22,6 @@ body {
 
 app-root {
     width: 100%;
-}
-
-div > span {
-    margin-right: .25em;
 }
 
 form {
