@@ -798,6 +798,10 @@ export class PlayGameComponent implements OnInit {
 
       if (!this.stopRecreate) {
         for (let i = 0; i < this.data.moves.length; i++) {
+          if (this.boardStates.length === 0) {
+            this.displayBoard = JSON.parse(JSON.stringify(this.board));
+          }
+
           const move = this.data.moves[i];
           // if move already on local board, skip
           const localMove = this.localMoves[i];
