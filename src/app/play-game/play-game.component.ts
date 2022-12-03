@@ -364,6 +364,10 @@ export class PlayGameComponent implements OnInit {
   }
 
   updateTimer(force: boolean = false) {
+    if (this.data.timer.player === -2) {
+      return;
+    }
+
     if (this.data.moves.length > 0 && this.data.moves[this.data.moves.length-1].x === -3) { 
     
       if (this.data.moves[this.data.moves.length-1].color === this.playerColor) {
@@ -413,7 +417,7 @@ export class PlayGameComponent implements OnInit {
     // console.log('timer', this.timer);
 
     // check if player ran out of time
-    if (player_timer <= 0 && !this.data.status.completed) {
+    if (player_timer <= 0 && player_timer !== -2 && !this.data.status.completed) {
       this.data.status.completed = true;
       this.data.winner = this.opponent.id;
       this.data.moves.push({ x: -3, y: -3, color: this.playerColor });
