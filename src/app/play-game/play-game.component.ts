@@ -37,12 +37,17 @@ export class PlayGameComponent implements OnInit {
 
   boardSize: number;
   board: string[][] = [];
+  displayBoard: string[][] = [];
   flip: boolean[][] = [];
   legalMove: boolean[][] = [];
   lastPlaced: {y: number, x: number} = {y: -1, x: -1};
   lastMoveTime: Date | undefined;
   timer: {player: number, opponent: number} = {player: -1, opponent: -1};
   timerSet: boolean = false;
+
+  boardStates: any[] = [];
+  lastPlacedStates: {y: number, x: number}[] = [];
+  currentBoardState: number = 0;
 
   playerColor: string = "";
   playerTurn: boolean;
@@ -319,6 +324,11 @@ export class PlayGameComponent implements OnInit {
       }
 
       this.pushTurn();
+
+      this.currentBoardState += 1;        
+      this.boardStates.push(JSON.parse(JSON.stringify(this.board)));
+      this.lastPlacedStates.push(JSON.parse(JSON.stringify(this.lastPlaced)));
+      this.setBoard(this.currentBoardState);
     }
   }
 
@@ -417,7 +427,7 @@ export class PlayGameComponent implements OnInit {
     // console.log('timer', this.timer);
 
     // check if player ran out of time
-    if (player_timer <= 0 && player_timer !== -2 && !this.data.status.completed) {
+    if (player_timer <= 0 && player_timer !== -2 && !this.data.status.completed && this.data.rules.time > 0) {
       this.data.status.completed = true;
       this.data.winner = this.opponent.id;
       this.data.moves.push({ x: -3, y: -3, color: this.playerColor });
@@ -529,6 +539,14 @@ export class PlayGameComponent implements OnInit {
     return n;
   }
 
+  setNoLegalMoves() {
+    for (let i = 0; i < this.boardSize; i++) {
+      for (let j = 0; j < this.boardSize; j++) {
+        this.legalMove[i][j] = false;
+      }
+    }
+  }
+
   startGame() {
     // reset values
     this.localMoves = [];
@@ -540,10 +558,12 @@ export class PlayGameComponent implements OnInit {
     // create this.board
     for (let i = 0; i < this.boardSize; i++) {
       this.board[i] = [];
+      this.displayBoard[i] = [];
       this.flip[i] = [];
       this.legalMove[i] = [];
       for (let j = 0; j < this.boardSize; j++) {
         this.board[i][j] = "";
+        this.displayBoard[i][j] = "";
         this.flip[i][j] = false;
         this.legalMove[i][j] = false;
       }
@@ -561,14 +581,16 @@ export class PlayGameComponent implements OnInit {
     this.stopRecreate = false;
 
     // start timer
-    interval(1000).subscribe(x => {
+    if (this.data.rules.time > 0) {
+      interval(1000).subscribe(x => {
 
-      if (!this.started || this.data.players.length < 2) {
-        return;
-      }
+        if (!this.started || this.data.players.length < 2) {
+          return;
+        }
 
-      this.updateTimer();
-    });
+        this.updateTimer();
+      });
+    }
   }
 
   onGiveUp() {
@@ -639,7 +661,46 @@ export class PlayGameComponent implements OnInit {
     return(s-(s%=60))/60+(9<s?':':':0')+s
   }
 
+  setBoard(state_n: number) {
+    console.log("setBoard", state_n);
+
+    this.displayBoard = JSON.parse(JSON.stringify(this.boardStates[state_n]));
+    this.lastPlaced = this.lastPlacedStates[state_n];
+
+    this.currentBoardState = state_n;
+
+    if (this.currentBoardState !== this.boardStates.length - 1) {
+      this.setNoLegalMoves();
+    }
+    else {
+      this.getLegalMoves();
+    }
+  }
+
+  changeBoardState(change_by: number) {
+    if (this.currentBoardState + change_by < 0) {
+      return;
+    }
+    if (this.currentBoardState + change_by >= this.boardStates.length) {
+      return;
+    }
+
+    this.setBoard(this.currentBoardState + change_by);
+
+    console.log("changeBoardState", change_by, this.currentBoardState);
+  }
+
   ngOnInit(): void {
+  //   // keyboard shortcuts
+  //   document.addEventListener('keydown', function(event: any) {
+  //     if(event.key == 'Left' || event.key == 'ArrowLeft') {
+  //       this.changeBoardState(-1);
+  //     }
+  //     else if(event.key == 'Right' || event.key == 'ArrowRight') {
+  //         alert('Right was pressed');
+  //     }
+  // });
+
     console.log(new Date());
 
     // online checker
@@ -738,7 +799,6 @@ export class PlayGameComponent implements OnInit {
       if (!this.stopRecreate) {
         for (let i = 0; i < this.data.moves.length; i++) {
           const move = this.data.moves[i];
-  
           // if move already on local board, skip
           const localMove = this.localMoves[i];
           if (localMove && localMove.x == move.x && localMove.y == move.y && localMove.color == move.color) {
@@ -750,7 +810,7 @@ export class PlayGameComponent implements OnInit {
           if (i > 0 && this.data.moves[i-1].x === -1 && move.x === -1) {
             this.setWinner();
             this.pushTurn();
-            break;
+            continue;
           }
   
           // if move is a skip move
@@ -769,14 +829,22 @@ export class PlayGameComponent implements OnInit {
           if (move.x === -2 && move.y === -2 && move.color === this.opponentColor) {
             this.toastr.info("Opponent gave up!", "", {timeOut: 5000});
   
-            break;
+            continue;
           }
 
           if (move.x < 0) {
-            break;
+            continue;
           }
-  
+
           this.putDisk(move.y, move.x, false, move.color);
+          
+          if (i >= this.boardStates.length) {
+            this.currentBoardState = i;         
+            this.boardStates.push(JSON.parse(JSON.stringify(this.board)));
+            this.lastPlacedStates.push(JSON.parse(JSON.stringify(this.lastPlaced)));
+          }
+
+          this.setBoard(i);
         }
       }
 

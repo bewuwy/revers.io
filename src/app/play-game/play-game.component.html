@@ -14,8 +14,8 @@
                      [class.legal] = "legalMove[i][j]"
                      attr.data-row="{{ i }}" attr.data-column="{{ j }}" (click)="putDisk(i, j, true);">
         
-                    <svg class="disk" *ngIf="board[i][j]" [class.highlight]="lastPlaced.y === i && lastPlaced.x === j"
-                         [ngClass]="board[i][j]" [class.flip]="flip[i][j]" >
+                    <svg class="disk" *ngIf="displayBoard[i][j]" [class.highlight]="lastPlaced.y === i && lastPlaced.x === j"
+                         [ngClass]="displayBoard[i][j]" [class.flip]="flip[i][j]" >
                         
                          <circle cx="50%" cy="50%" r="50%" />
                     </svg>
@@ -90,12 +90,12 @@
         
             <span title="Offer a draw">½</span>
 
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" (click)="changeBoardState(-1);">
                 <title>Previous turn</title>
                 <!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160zm352-160l-160 160c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L301.3 256 438.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0z"/>
             </svg>
 
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" (click)="changeBoardState(1);">
                 <title>Next turn</title>
                 <!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M470.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 256 265.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160zm-352 160l160-160c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L210.7 256 73.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0z"/>
             </svg>

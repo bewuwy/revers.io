@@ -505,7 +505,7 @@ body {
     .highlight {
         transition: all;
         transition-duration: 0.1s;
-        transition-delay: 0.3s;
+        transition-delay: 0s; /* 0.3s */
         box-shadow: 0 0 10px 5px #0e86e9;
     }
 
