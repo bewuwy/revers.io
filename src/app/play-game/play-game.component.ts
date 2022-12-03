@@ -5,6 +5,8 @@ import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, i
 import { ActivatedRoute, Router } from '@angular/router';
 import { fromEvent, map, merge, Observable, Observer } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { interval } from 'rxjs';
+
 
 // TODO: play without an account
 
@@ -22,7 +24,6 @@ export class PlayGameComponent implements OnInit {
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
   started: boolean = false;
   online: boolean = true;
-  // // timesLoaded: number = 0;
 
   user: any;
 
@@ -39,6 +40,9 @@ export class PlayGameComponent implements OnInit {
   flip: boolean[][] = [];
   legalMove: boolean[][] = [];
   lastPlaced: {y: number, x: number} = {y: -1, x: -1};
+  lastMoveTime: Date | undefined;
+  timer: {player: number, opponent: number} = {player: -1, opponent: -1};
+  timerSet: boolean = false;
 
   playerColor: string = "";
   playerTurn: boolean;
@@ -46,7 +50,7 @@ export class PlayGameComponent implements OnInit {
   stopRecreate: boolean = false;
 
   // audio effects
-  bellRing:HTMLAudioElement = new Audio();
+  bellRing: HTMLAudioElement = new Audio();
   winEffect: HTMLAudioElement = new Audio();
   loseEffect: HTMLAudioElement = new Audio();
 
@@ -305,7 +309,7 @@ export class PlayGameComponent implements OnInit {
         this.data.score[color]++;
       }
 
-      this.data.moves.push({ x: x, y: y, color: color });
+      this.data.moves.push({y: y, x: x, color: color});
 
       // check if board is full
       const maxDisks = this.boardSize * this.boardSize;
@@ -359,10 +363,81 @@ export class PlayGameComponent implements OnInit {
     this.pushTurn();
   }
 
+  updateTimer(force: boolean = false) {
+    if (this.data.moves.length > 0 && this.data.moves[this.data.moves.length-1].x === -3) { 
+    
+      if (this.data.moves[this.data.moves.length-1].color === this.playerColor) {
+        this.timer.player = 0;
+        // this.playerTurn = true;
+      }
+      else {
+        this.timer.opponent = 0;
+        // this.playerTurn = false;
+      }
+    }
+
+    if (this.data.status.completed && this.timerSet && !force) { return; }
+
+    // console.log("update timer");
+
+    const currTime = new Date();
+  
+    let player_timer = this.data.timer[this.playerColor];
+    let opponent_timer = this.data.timer[this.opponentColor];
+
+    // console.log("player timer: " + player_timer);
+    // console.log("opponent timer: " + opponent_timer);
+
+    if (this.data.lastMoveTime) {
+      const timeSinceLastMove = (currTime.getTime() - this.data.lastMoveTime.seconds * 1000)/1000;
+
+      if (this.playerTurn) {
+        player_timer -= timeSinceLastMove;
+      }
+      else {
+        opponent_timer -= timeSinceLastMove;
+      }
+
+      // console.log("since", timeSinceLastMove);
+    }
+
+    player_timer = Math.round(player_timer);
+    opponent_timer = Math.round(opponent_timer);
+
+    // set timer
+    this.timer = {
+      'player': player_timer,
+      'opponent': opponent_timer,
+    }
+
+    // console.log('timer', this.timer);
+
+    // check if player ran out of time
+    if (player_timer <= 0 && !this.data.status.completed) {
+      this.data.status.completed = true;
+      this.data.winner = this.opponent.id;
+      this.data.moves.push({ x: -3, y: -3, color: this.playerColor });
+      this.won = false;
+
+      this.toastr.error("You ran out of time!", "Game Over");
+      
+      this.pushTurn();
+    }
+  }
+
   // push data to firebase
   pushTurn() {
     console.log("trying to push turn");
     // console.log(this.data);
+
+    this.data.lastMoveTime = new Date();
+
+    console.log('moves');
+    console.log(this.data.moves);
+
+    if (this.data.moves.length > 0 && this.data.moves[this.data.moves.length-1].color === this.playerColor) {
+      this.data.timer[this.playerColor] = this.timer.player; 
+    }
 
     setDoc(doc(collection(this.db, 'games'), this.gameId), this.data).then(() => {
       console.log("turn synced");
@@ -480,10 +555,20 @@ export class PlayGameComponent implements OnInit {
     }
 
     this.stopRecreate = false;
+
+    // start timer
+    interval(1000).subscribe(x => {
+
+      if (!this.started || this.data.players.length < 2) {
+        return;
+      }
+
+      this.updateTimer();
+    });
   }
 
   onGiveUp() {
-    if (!this.started || this.data.status.completed) {
+    if (!this.started || this.data.players.length < 2 || this.data.status.completed) {
       return;
     }
 
@@ -526,7 +611,12 @@ export class PlayGameComponent implements OnInit {
       this.data.winner = "";
       this.data.moves = [];
       this.data.score = { white: this.data.rules.startingDisks * 2, black: this.data.rules.startingDisks * 2 };
+      this.data.timer = { white: this.data.rules.time, black: this.data.rules.time };
+      this.data.lastMoveTime = new Date().getTime() + 10^4;
       this.won = null;
+
+      this.waitingRematch = false;
+      this.rematchSent = false;
 
       this.pushTurn();
 
@@ -537,7 +627,17 @@ export class PlayGameComponent implements OnInit {
     this.stopRecreate = true;
   }
 
+  getMinutes(s: number) {
+    if (s < 0) {
+      return "0:00";
+    }
+
+    return(s-(s%=60))/60+(9<s?':':':0')+s
+  }
+
   ngOnInit(): void {
+    console.log(new Date());
+
     // online checker
     this.createOnline$().subscribe((isOnline:any) => {
       if (this.online && !isOnline) {
@@ -667,6 +767,10 @@ export class PlayGameComponent implements OnInit {
   
             break;
           }
+
+          if (move.x < 0) {
+            break;
+          }
   
           this.putDisk(move.y, move.x, false, move.color);
         }
@@ -685,6 +789,12 @@ export class PlayGameComponent implements OnInit {
         // get player's and opponent's color
         this.playerColor = this.data.players.find((player:any) => player.id === this.user?.uid).color;
         this.opponentColor = this.playerColor === "black" ? "white" : "black";
+
+      // update timer
+      if (!this.timerSet) {
+        this.updateTimer();
+        this.timerSet = true;
+      }
 
       // check if opponent wants to rematch
       if (this.data.rematch) {
@@ -780,16 +890,23 @@ export class PlayGameComponent implements OnInit {
           }
         }
       }
-      else { // game is over, set all moves to illegal
+      else { 
+        // game is over, set all moves to illegal
         for (let i = 0; i < this.board.length; i++) {
           for (let j = 0; j < this.board[i].length; j++) {
             this.legalMove[i][j] = false;
           }
         }
+
+        if (this.data.moves[this.data.moves.length-1].x === -3 && this.data.moves[this.data.moves.length-1].y === -3) {
+          console.log('last move was a time-out');
+          this.playerTurn = this.data.moves[this.data.moves.length-1].color === this.playerColor;
+
+          this.updateTimer(true);
+        }
       }
 
       // console.log("data: ", this.data);
-      // // this.timesLoaded++;
     });
   }
 }

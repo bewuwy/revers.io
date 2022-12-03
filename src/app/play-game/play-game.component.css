@@ -3,11 +3,11 @@
     --black: #000;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
     :root {
         --white: #f6f6d2;
     }
-}
+} */
 
 #play {
     margin-top: 2rem;
@@ -481,7 +481,7 @@ body {
 .disk {
     width: 90%;
     height: 90%;
-    /* border-radius: 50%; */
+    border-radius: 50%;
 
     font-size: 30px;
     line-height: 50px;
