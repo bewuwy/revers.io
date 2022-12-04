@@ -40,7 +40,7 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
     ReactiveFormsModule,
     ClipboardModule,
     BrowserAnimationsModule, // required animations module
-    ToastrModule.forRoot({ positionClass: 'toast-bottom-right', timeOut: 2500, }),
+    ToastrModule.forRoot({ positionClass: 'toast-bottom-center', timeOut: 2500, }),
     NgxChartsModule,
   ],
   providers: [],

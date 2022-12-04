@@ -1,12 +1,55 @@
-<div id="play">
-    <div *ngIf="valid.valid && data; then dataExists else dataNotExists"></div>
-</div>
+<h3>Game</h3>
+
+<div *ngIf="valid.valid && data; then dataExists else dataNotExists"></div>
 
 <ng-template #dataExists>
+    <div id="game-info">
+        <div *ngIf="opponent">
+            <p title="{{ opponent.id }}">playing against {{ opponent.name }}</p>
+            <p>you are playing as <b>{{ playerColor }}</b></p>
+        </div>
 
-    <div id="board-container">
+        <div *ngIf="!opponent && !data.status.completed">
+            <div id="invite-container">
+                <p class="has-svg">
+                    waiting for an opponent...
+                    <svg class="rolling" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M0 24C0 10.75 10.75 0 24 0H360C373.3 0 384 10.75 384 24C384 37.25 373.3 48 360 48H352V66.98C352 107.3 335.1 145.1 307.5 174.5L225.9 256L307.5 337.5C335.1 366 352 404.7 352 445V464H360C373.3 464 384 474.7 384 488C384 501.3 373.3 512 360 512H24C10.75 512 0 501.3 0 488C0 474.7 10.75 464 24 464H32V445C32 404.7 48.01 366 76.52 337.5L158.1 256L76.52 174.5C48.01 145.1 32 107.3 32 66.98V48H24C10.75 48 0 37.25 0 24V24zM99.78 384H284.2C281 379.6 277.4 375.4 273.5 371.5L192 289.9L110.5 371.5C106.6 375.4 102.1 379.6 99.78 384H99.78zM284.2 128C296.1 110.4 304 89.03 304 66.98V48H80V66.98C80 89.03 87 110.4 99.78 128H284.2z"/></svg>
+                </p>
+                <button ngxClipboard [cbContent]="getInvite(gameId)" (click)="toastr.success('Copied invite link!');">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    invite to game
+                </button>
+            </div>
+        </div>
+        <p>game created {{ createdDelta }} ago</p>
+    </div>
+
+    <div id="board-title">
+        <h3>board</h3>
+        <div id="board-size-options">
+            <button title="Reset board size" id="resetBoardWith" class="noButton" (click)="onResetBoardWidth()" [style.display]="boardWidthResetShow ? 'block': 'none'">
+                <svg xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  </svg>
+            </button>
+            <button title="Decrease board size" id="boardSizeMinus" class="noButton" (click)="onDecrBoardWidth()">
+                <svg xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+                </svg>
+            </button>
+            <button title="Increase board size" id="boardSizePlus" class="noButton" (click)="onIncrBoardWidth()">
+                <svg xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="board-container" [style.width.%]="boardWidth">
         <div id="board" #boardDiv [class.disabled]="!opponent || !playerTurn">
-            <div *ngIf="!opponent && !data.status.completed" id="curtain"><span>Waiting for an opponent...</span></div>
+            <div *ngIf="!opponent && !data.status.completed" id="curtain"><span>waiting for an opponent...</span></div>
 
             <div class="row" *ngFor="let item of [].constructor(boardSize); let i = index"
                  attr.data-row="{{ i }}">
@@ -14,99 +57,41 @@
                      [class.legal] = "legalMove[i][j]"
                      attr.data-row="{{ i }}" attr.data-column="{{ j }}" (click)="putDisk(i, j, true);">
         
-                    <svg class="disk" *ngIf="displayBoard[i][j]" [class.highlight]="lastPlaced.y === i && lastPlaced.x === j"
-                         [ngClass]="displayBoard[i][j]" [class.flip]="flip[i][j]" >
-                        
-                         <circle cx="50%" cy="50%" r="50%" />
-                    </svg>
+                    <div class="disk" *ngIf="board[i][j]"
+                         [ngClass]="board[i][j]" [class.flip]="flip[i][j]" ></div>
                 </div>
             </div>
+        </div>
+
+        <div id="game-status" *ngIf="opponent && !data.status.completed">    
+            <span *ngIf="!playerTurn" class="has-svg">
+                waiting for opponent's move...
+                <svg class="rolling" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M0 24C0 10.75 10.75 0 24 0H360C373.3 0 384 10.75 384 24C384 37.25 373.3 48 360 48H352V66.98C352 107.3 335.1 145.1 307.5 174.5L225.9 256L307.5 337.5C335.1 366 352 404.7 352 445V464H360C373.3 464 384 474.7 384 488C384 501.3 373.3 512 360 512H24C10.75 512 0 501.3 0 488C0 474.7 10.75 464 24 464H32V445C32 404.7 48.01 366 76.52 337.5L158.1 256L76.52 174.5C48.01 145.1 32 107.3 32 66.98V48H24C10.75 48 0 37.25 0 24V24zM99.78 384H284.2C281 379.6 277.4 375.4 273.5 371.5L192 289.9L110.5 371.5C106.6 375.4 102.1 379.6 99.78 384H99.78zM284.2 128C296.1 110.4 304 89.03 304 66.98V48H80V66.98C80 89.03 87 110.4 99.78 128H284.2z"/></svg>
+            </span>
+            
+            <span *ngIf="playerTurn" class="has-svg">
+                your turn!
+                <svg class="ringing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M256 32V49.88C328.5 61.39 384 124.2 384 200V233.4C384 278.8 399.5 322.9 427.8 358.4L442.7 377C448.5 384.2 449.6 394.1 445.6 402.4C441.6 410.7 433.2 416 424 416H24C14.77 416 6.365 410.7 2.369 402.4C-1.628 394.1-.504 384.2 5.26 377L20.17 358.4C48.54 322.9 64 278.8 64 233.4V200C64 124.2 119.5 61.39 192 49.88V32C192 14.33 206.3 0 224 0C241.7 0 256 14.33 256 32V32zM216 96C158.6 96 112 142.6 112 200V233.4C112 281.3 98.12 328 72.31 368H375.7C349.9 328 336 281.3 336 233.4V200C336 142.6 289.4 96 232 96H216zM288 448C288 464.1 281.3 481.3 269.3 493.3C257.3 505.3 240.1 512 224 512C207 512 190.7 505.3 178.7 493.3C166.7 481.3 160 464.1 160 448H288z"/></svg>
+            </span>
+
+            <button class="give-up" (click)="onGiveUp()">Give up</button>
         </div>
 
         <div id="score">
+            <h3>score</h3>
+            <!-- <p>white: {{ data.score.white }} black: {{ data.score.black }}</p> -->
             <div class="score-bar" *ngIf="opponent">
                 <div class="player-score player" [ngClass]="playerColor" [style.width.%]="data.score[playerColor] / (data.score[playerColor] + data.score[opponentColor]) * 100" >
-                    <svg>
-                        <rect width="100%" height="100%" />
-                    </svg>
                     <span>{{ data.score[playerColor] }}</span>
                 </div>
                 <div class="player-score opponent" [ngClass]="opponentColor" [style.width.%]="data.score[opponentColor] / (data.score[playerColor] + data.score[opponentColor]) * 100" >
-                    <svg>
-                        <rect width="100%" height="100%" />
-                    </svg>
                     <span>{{ data.score[opponentColor] }}</span>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div id="game-info">
-        <button id="rematch" [class.jumping]="waitingRematch && !rematchSent" [class.sent]="rematchSent" (click)="onRematch()" *ngIf="data.status.completed">
-            Rematch!
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M386.3 160H336c-17.7 0-32 14.3-32 32s14.3 32 32 32H464c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32s-32 14.3-32 32v51.2L414.4 97.6c-87.5-87.5-229.3-87.5-316.8 0s-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3s163.8-62.5 226.3 0L386.3 160z"/></svg>
-        </button>
-
-        <div id="timer-enemy" class="timer" [class.timer-show]="!playerTurn || showTimer" [class.dim]="playerTurn">
-            <svg [class.block]="!playerTurn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M232 120C232 106.7 242.7 96 256 96C269.3 96 280 106.7 280 120V243.2L365.3 300C376.3 307.4 379.3 322.3 371.1 333.3C364.6 344.3 349.7 347.3 338.7 339.1L242.7 275.1C236 271.5 232 264 232 255.1L232 120zM256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256C0 114.6 114.6 0 256 0zM48 256C48 370.9 141.1 464 256 464C370.9 464 464 370.9 464 256C464 141.1 370.9 48 256 48C141.1 48 48 141.1 48 256z"/></svg>
-            <span [class.block]="showTimer">{{ getMinutes(timer.opponent) }}</span>
-        </div>
-
-        <div id="player-names">
-            <!-- <div *ngIf="opponent"> -->
-                <div *ngIf="opponent">
-                    <svg class="disk" [ngClass]="opponent.color">                        
-                         <circle cx="50%" cy="50%" r="50%" />
-                    </svg>
-
-                    <span>{{ opponent.name }}</span>
-                    <svg class="crown" [class.visible]="!won && this.data.winner != 'tie' && this.data.status.completed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M309 106c11.4-7 19-19.7 19-34c0-22.1-17.9-40-40-40s-40 17.9-40 40c0 14.4 7.6 27 19 34L209.7 220.6c-9.1 18.2-32.7 23.4-48.6 10.7L72 160c5-6.7 8-15 8-24c0-22.1-17.9-40-40-40S0 113.9 0 136s17.9 40 40 40c.2 0 .5 0 .7 0L86.4 427.4c5.5 30.4 32 52.6 63 52.6H426.6c30.9 0 57.4-22.1 63-52.6L535.3 176c.2 0 .5 0 .7 0c22.1 0 40-17.9 40-40s-17.9-40-40-40s-40 17.9-40 40c0 9 3 17.3 8 24l-89.1 71.3c-15.9 12.7-39.5 7.5-48.6-10.7L309 106z"/></svg>
-                </div>
-                <span *ngIf="opponent">vs</span>
-                <div *ngIf="opponent">
-                    <svg class="disk" [ngClass]="playerColor">                        
-                        <circle cx="50%" cy="50%" r="50%" />
-                    </svg>
-                   
-                   <span>{{ user.displayName }}</span>
-                    <svg class="crown" [class.visible]="won" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M309 106c11.4-7 19-19.7 19-34c0-22.1-17.9-40-40-40s-40 17.9-40 40c0 14.4 7.6 27 19 34L209.7 220.6c-9.1 18.2-32.7 23.4-48.6 10.7L72 160c5-6.7 8-15 8-24c0-22.1-17.9-40-40-40S0 113.9 0 136s17.9 40 40 40c.2 0 .5 0 .7 0L86.4 427.4c5.5 30.4 32 52.6 63 52.6H426.6c30.9 0 57.4-22.1 63-52.6L535.3 176c.2 0 .5 0 .7 0c22.1 0 40-17.9 40-40s-17.9-40-40-40s-40 17.9-40 40c0 9 3 17.3 8 24l-89.1 71.3c-15.9 12.7-39.5 7.5-48.6-10.7L309 106z"/></svg>
-                </div>
-            <!-- </div> -->
-
-            <div *ngIf="!opponent && !data.status.completed">
-                <button ngxClipboard [cbContent]="getInvite(gameId)" (click)="toastr.success('Copied invite link!');">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                    Invite to game
-                </button>
-            </div>
-        </div>
-
-        <div id="timer-player" class="timer" [class.timer-show]="playerTurn || showTimer" [class.dim]="!playerTurn">
-            <svg [class.block]="playerTurn" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M232 120C232 106.7 242.7 96 256 96C269.3 96 280 106.7 280 120V243.2L365.3 300C376.3 307.4 379.3 322.3 371.1 333.3C364.6 344.3 349.7 347.3 338.7 339.1L242.7 275.1C236 271.5 232 264 232 255.1L232 120zM256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256C0 114.6 114.6 0 256 0zM48 256C48 370.9 141.1 464 256 464C370.9 464 464 370.9 464 256C464 141.1 370.9 48 256 48C141.1 48 48 141.1 48 256z"/></svg>
-            <span [class.block]="showTimer" >{{ getMinutes(timer.player) }}</span>
-        </div>
-
-        <div id="game-controls">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" (click)="onGiveUp()">
-                <title>Resign</title>
-                <!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M64 32C64 14.3 49.7 0 32 0S0 14.3 0 32V64 368 480c0 17.7 14.3 32 32 32s32-14.3 32-32V352l64.3-16.1c41.1-10.3 84.6-5.5 122.5 13.4c44.2 22.1 95.5 24.8 141.7 7.4l34.7-13c12.5-4.7 20.8-16.6 20.8-30V66.1c0-23-24.2-38-44.8-27.7l-9.6 4.8c-46.3 23.2-100.8 23.2-147.1 0c-35.1-17.6-75.4-22-113.5-12.5L64 48V32z"/>
-            </svg>
         
-            <!-- <span title="Offer a draw">½</span> -->
-
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" (click)="changeBoardState(-1);">
-                <title>Previous turn</title>
-                <!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160zm352-160l-160 160c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L301.3 256 438.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0z"/>
-            </svg>
-
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" (click)="changeBoardState(1);">
-                <title>Next turn</title>
-                <!-- Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M470.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 256 265.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160zm-352 160l160-160c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L210.7 256 73.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0z"/>
-            </svg>
-
+            <p *ngIf="data.status.completed">game completed - <b *ngIf="won === true">you won!</b><b *ngIf="won === false">you lost!</b><b *ngIf="won === null">tie!</b></p>
         </div>
+
     </div>
 
 </ng-template>
