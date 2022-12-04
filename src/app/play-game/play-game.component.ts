@@ -1,20 +1,17 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, Inject, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { Firestore, collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc, increment, arrayRemove, FieldValue } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { fromEvent, map, merge, Observable, Observer } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { interval } from 'rxjs';
-
 
 // TODO: play without an account
 
 @Component({
   selector: 'app-play-game',
   templateUrl: './play-game.component.html',
-  styleUrls: ['./play-game.component.css'],
-  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./play-game.component.css']
 })
 
 export class PlayGameComponent implements OnInit {
@@ -24,41 +21,33 @@ export class PlayGameComponent implements OnInit {
   valid: {valid: boolean, reason: string} = {valid: true, reason: ""};
   started: boolean = false;
   online: boolean = true;
+  timesLoaded: number = 0;
 
   user: any;
 
   opponent: { name: string, id: string, color: string };
   opponentColor: string;
-  // createdDelta: string = "";
+  createdDelta: string = "";
   won: boolean | null = null;
   resultShown: boolean = false;
-  waitingRematch: boolean = false;
-  rematchSent: boolean = false;
-  showTimer: boolean = false;
 
   boardSize: number;
   board: string[][] = [];
-  displayBoard: string[][] = [];
   flip: boolean[][] = [];
   legalMove: boolean[][] = [];
-  lastPlaced: {y: number, x: number} = {y: -1, x: -1};
-  lastMoveTime: Date | undefined;
-  timer: {player: number, opponent: number} = {player: -1, opponent: -1};
-  timerSet: boolean = false;
-
-  boardStates: any[] = [];
-  lastPlacedStates: {y: number, x: number}[] = [];
-  currentBoardState: number = 0;
 
   playerColor: string = "";
   playerTurn: boolean;
   localMoves: { x: number, y: number, color: string }[] = [];
-  stopRecreate: boolean = false;
 
   // audio effects
-  bellRing: HTMLAudioElement = new Audio();
+  bellRing:HTMLAudioElement = new Audio();
   winEffect: HTMLAudioElement = new Audio();
   loseEffect: HTMLAudioElement = new Audio();
+
+  // layout settings
+  boardWidth: number | undefined;
+  boardWidthResetShow: boolean = false;
 
   // constructor
   constructor(private db: Firestore, private auth: Auth, 
@@ -265,12 +254,6 @@ export class PlayGameComponent implements OnInit {
   }
 
   putDisk(y: number, x: number, user: boolean, color?: string) {
-    if (x < 0 || y < 0) {
-      return;
-    }
-
-    this.lastPlaced = {y: y, x: x};
-
     // check if game started
     if (user && !this.opponent.id) {
       console.log("game not started");
@@ -315,7 +298,7 @@ export class PlayGameComponent implements OnInit {
         this.data.score[color]++;
       }
 
-      this.data.moves.push({y: y, x: x, color: color});
+      this.data.moves.push({ x: x, y: y, color: color });
 
       // check if board is full
       const maxDisks = this.boardSize * this.boardSize;
@@ -325,11 +308,6 @@ export class PlayGameComponent implements OnInit {
       }
 
       this.pushTurn();
-
-      this.currentBoardState += 1;
-      this.boardStates.push(JSON.parse(JSON.stringify(this.board)));
-      this.lastPlacedStates.push(JSON.parse(JSON.stringify(this.lastPlaced)));
-      this.setBoard(this.currentBoardState);
     }
   }
 
@@ -374,85 +352,10 @@ export class PlayGameComponent implements OnInit {
     this.pushTurn();
   }
 
-  updateTimer(force: boolean = false) {
-    if (this.data.timer.player === -2) {
-      return;
-    }
-
-    if (this.data.moves.length > 0 && this.data.moves[this.data.moves.length-1].x === -3) { 
-    
-      if (this.data.moves[this.data.moves.length-1].color === this.playerColor) {
-        this.timer.player = 0;
-        // this.playerTurn = true;
-      }
-      else {
-        this.timer.opponent = 0;
-        // this.playerTurn = false;
-      }
-    }
-
-    if (this.data.status.completed && this.timerSet && !force) { return; }
-
-    // console.log("update timer");
-
-    const currTime = new Date();
-  
-    let player_timer = this.data.timer[this.playerColor];
-    let opponent_timer = this.data.timer[this.opponentColor];
-
-    // console.log("player timer: " + player_timer);
-    // console.log("opponent timer: " + opponent_timer);
-
-    if (this.data.lastMoveTime) {
-      const timeSinceLastMove = (currTime.getTime() - this.data.lastMoveTime.seconds * 1000)/1000;
-
-      if (this.playerTurn) {
-        player_timer -= timeSinceLastMove;
-      }
-      else {
-        opponent_timer -= timeSinceLastMove;
-      }
-
-      // console.log("since", timeSinceLastMove);
-    }
-
-    player_timer = Math.round(player_timer);
-    opponent_timer = Math.round(opponent_timer);
-
-    // set timer
-    this.timer = {
-      'player': player_timer,
-      'opponent': opponent_timer,
-    }
-
-    // console.log('timer', this.timer);
-
-    // check if player ran out of time
-    if (player_timer <= 0 && player_timer !== -2 && !this.data.status.completed && this.data.rules.time > 0) {
-      this.data.status.completed = true;
-      this.data.winner = this.opponent.id;
-      this.data.moves.push({ x: -3, y: -3, color: this.playerColor });
-      this.won = false;
-
-      this.toastr.error("You ran out of time!", "Game Over");
-      
-      this.pushTurn();
-    }
-  }
-
   // push data to firebase
   pushTurn() {
     console.log("trying to push turn");
-    // console.log(this.data);
-
-    this.data.lastMoveTime = new Date();
-
-    console.log('moves');
-    console.log(this.data.moves);
-
-    if (this.data.moves.length > 0 && this.data.moves[this.data.moves.length-1].color === this.playerColor) {
-      this.data.timer[this.playerColor] = this.timer.player; 
-    }
+    console.log(this.data);
 
     setDoc(doc(collection(this.db, 'games'), this.gameId), this.data).then(() => {
       console.log("turn synced");
@@ -540,31 +443,14 @@ export class PlayGameComponent implements OnInit {
     return n;
   }
 
-  setNoLegalMoves() {
-    for (let i = 0; i < this.boardSize; i++) {
-      for (let j = 0; j < this.boardSize; j++) {
-        this.legalMove[i][j] = false;
-      }
-    }
-  }
-
   startGame() {
-    // reset values
-    this.localMoves = [];
-    this.resultShown = false;
-    this.won = false;
-    this.waitingRematch = false;
-    this.rematchSent = false;
-
     // create this.board
     for (let i = 0; i < this.boardSize; i++) {
       this.board[i] = [];
-      this.displayBoard[i] = [];
       this.flip[i] = [];
       this.legalMove[i] = [];
       for (let j = 0; j < this.boardSize; j++) {
         this.board[i][j] = "";
-        this.displayBoard[i][j] = "";
         this.flip[i][j] = false;
         this.legalMove[i][j] = false;
       }
@@ -578,31 +464,9 @@ export class PlayGameComponent implements OnInit {
       this.flipDisk(center, center, "black");
       this.flipDisk(center, center-1, "white");        
     }
-
-    this.stopRecreate = false;
-
-    // start timer
-    if (this.data.rules.time > 0) {
-      interval(1000).subscribe(x => {
-
-        if (!this.started || this.data.players.length < 2) {
-          return;
-        }
-
-        this.updateTimer();
-      });
-    }
-
-    // update display board
-    this.displayBoard = JSON.parse(JSON.stringify(this.board));
-    this.currentBoardState = -1;
   }
 
   onGiveUp() {
-    if (!this.started || this.data.players.length < 2 || this.data.status.completed) {
-      return;
-    }
-
     this.data.status.completed = true;
     this.data.winner = this.opponent.id;
     this.data.moves.push({ x: -2, y: -2, color: this.playerColor });
@@ -611,103 +475,7 @@ export class PlayGameComponent implements OnInit {
     this.pushTurn();
   }
 
-  onRematch() {
-
-    if (!this.data.rematch) {
-      this.data.rematch = [this.user.uid];
-    }
-
-    if (!this.data.rematch || this.data.rematch.length < 1) {
-      this.toastr.success("Rematch request sent");
-      this.rematchSent = true;
-    }
-
-    this.waitingRematch = true;
-    
-    if (!this.data.rematch.includes(this.user.uid)) {
-      this.data.rematch.push(this.user.uid);
-    }
-
-    this.pushTurn();
-
-    if (this.data.rematch.length === 2) {
-      if (Math.random() > 0.5) {
-        this.data.players[0].color = this.data.players[0].color === "black" ? "white" : "black";
-        this.data.players[1].color = this.data.players[1].color === "black" ? "white" : "black";
-      }
-
-      this.data.rematch = [];
-
-      this.data.status.completed = false;
-      this.data.winner = "";
-      this.data.moves = [];
-      this.data.score = { white: this.data.rules.startingDisks * 2, black: this.data.rules.startingDisks * 2 };
-      this.data.timer = { white: this.data.rules.time, black: this.data.rules.time };
-      this.data.lastMoveTime = new Date().getTime() + 10^4;
-      this.won = null;
-
-      this.waitingRematch = false;
-      this.rematchSent = false;
-
-      this.pushTurn();
-
-      // window.location.reload();
-      this.startGame();
-    }
-
-    this.stopRecreate = true;
-  }
-
-  getMinutes(s: number) {
-    if (s < 0) {
-      return "0:00";
-    }
-
-    return(s-(s%=60))/60+(9<s?':':':0')+s
-  }
-
-  setBoard(state_n: number) {
-    console.log("setBoard", state_n);
-
-    this.displayBoard = JSON.parse(JSON.stringify(this.boardStates[state_n]));
-    this.lastPlaced = this.lastPlacedStates[state_n];
-
-    this.currentBoardState = state_n;
-
-    if (this.currentBoardState !== this.boardStates.length - 1) {
-      this.setNoLegalMoves();
-    }
-    else {
-      this.getLegalMoves();
-    }
-  }
-
-  changeBoardState(change_by: number) {
-    if (this.currentBoardState + change_by < 0) {
-      return;
-    }
-    if (this.currentBoardState + change_by >= this.boardStates.length) {
-      return;
-    }
-
-    this.setBoard(this.currentBoardState + change_by);
-
-    console.log("changeBoardState", change_by, this.currentBoardState);
-  }
-
   ngOnInit(): void {
-  //   // keyboard shortcuts
-  //   document.addEventListener('keydown', function(event: any) {
-  //     if(event.key == 'Left' || event.key == 'ArrowLeft') {
-  //       this.changeBoardState(-1);
-  //     }
-  //     else if(event.key == 'Right' || event.key == 'ArrowRight') {
-  //         alert('Right was pressed');
-  //     }
-  // });
-
-    console.log(new Date());
-
     // online checker
     this.createOnline$().subscribe((isOnline:any) => {
       if (this.online && !isOnline) {
@@ -763,8 +531,6 @@ export class PlayGameComponent implements OnInit {
         // start game if not started
         this.startGame();
         this.started = true;
-        
-        this.showTimer = this.data.rules.time > 0;
       }
 
       this.user = this.auth.currentUser;
@@ -795,69 +561,53 @@ export class PlayGameComponent implements OnInit {
         return;
       }
 
+      // check if game is over when just loaded
+      if (this.timesLoaded === 0 && this.data.status.completed) { 
+        this.valid.valid = false;
+        this.valid.reason = "This game has ended";
+
+        return;
+      }
+
       // recreate moves on board
       console.log("recreate", this.data.moves.length-this.localMoves.length, "moves on board");
+      for (let i = 0; i < this.data.moves.length; i++) {
+        const move = this.data.moves[i];
 
-      if (this.data.moves.length-this.localMoves.length < 0) {
-        this.startGame();        
-        this.toastr.success("Rematch accepted");
-      }
-
-      if (this.boardStates.length === 0) {
-        this.displayBoard = JSON.parse(JSON.stringify(this.board));
-        this.currentBoardState = -1;
-      }
-
-      if (!this.stopRecreate) {
-        for (let i = 0; i < this.data.moves.length; i++) {
-          const move = this.data.moves[i];
-          // if move already on local board, skip
-          const localMove = this.localMoves[i];
-          if (localMove && localMove.x == move.x && localMove.y == move.y && localMove.color == move.color) {
-            // console.log("move already on local board");
-            continue;
-          }
-  
-          // if there were two skips in a row, end game
-          if (i > 0 && this.data.moves[i-1].x === -1 && move.x === -1) {
-            this.setWinner();
-            this.pushTurn();
-            continue;
-          }
-  
-          // if move is a skip move
-          if (move.x === -1 && move.y === -1) {
-            // if the move was the last move, inform user
-            if (i === this.data.moves.length-1 && move.color === this.opponentColor) {
-              const msg = this.data.rules.loseNoMove ? "You won!" : "Your turn!";
-  
-              this.toastr.info("Opponent couldn't make a move!", msg, {timeOut: 5000});
-            }
-  
-            continue;
-          }
-  
-          // if move is a give up move, alert player
-          if (move.x === -2 && move.y === -2 && move.color === this.opponentColor) {
-            this.toastr.info("Opponent gave up!", "", {timeOut: 5000});
-  
-            continue;
-          }
-
-          if (move.x < 0) {
-            continue;
-          }
-
-          this.putDisk(move.y, move.x, false, move.color);
-          
-          if (i >= this.boardStates.length) {
-            this.currentBoardState = i;         
-            this.boardStates.push(JSON.parse(JSON.stringify(this.board)));
-            this.lastPlacedStates.push(JSON.parse(JSON.stringify(this.lastPlaced)));
-          }
-
-          this.setBoard(i);
+        // if move already on local board, skip
+        const localMove = this.localMoves[i];
+        if (localMove && localMove.x == move.x && localMove.y == move.y && localMove.color == move.color) {
+          // console.log("move already on local board");
+          continue;
         }
+
+        // if there were two skips in a row, end game
+        if (i > 0 && this.data.moves[i-1].x === -1 && move.x === -1) {
+          this.setWinner();
+          this.pushTurn();
+          break;
+        }
+
+        // if move is a skip move
+        if (move.x === -1 && move.y === -1) {
+          // if the move was the last move, inform user
+          if (i === this.data.moves.length-1 && move.color === this.opponentColor) {
+            const msg = this.data.rules.loseNoMove ? "You won!" : "Your turn!";
+
+            this.toastr.info("Opponent couldn't make a move!", msg, {timeOut: 5000});
+          }
+
+          continue;
+        }
+
+        // if move is a give up move, alert player
+        if (move.x === -2 && move.y === -2 && move.color === this.opponentColor) {
+          this.toastr.info("Opponent gave up!", "", {timeOut: 5000});
+
+          break;
+        }
+
+        this.putDisk(move.y, move.x, false, move.color);
       }
 
       // update local moves
@@ -874,28 +624,8 @@ export class PlayGameComponent implements OnInit {
         this.playerColor = this.data.players.find((player:any) => player.id === this.user?.uid).color;
         this.opponentColor = this.playerColor === "black" ? "white" : "black";
 
-      // update timer
-      if (!this.timerSet) {
-        this.updateTimer();
-        this.timerSet = true;
-      }
-
-      // check if opponent wants to rematch
-      if (this.data.rematch) {
-        if (this.data.rematch.includes(this.opponent.id) && !this.stopRecreate) {
-          this.toastr.warning("Opponent wants to rematch");
-        }
-        if (this.data.rematch.length > 0) {
-          this.waitingRematch = true;
-        }
-        if (this.data.rematch.includes(this.user.uid)) {
-          this.rematchSent = true;
-        }
-      }
-
-
       // check if current user won
-      if (this.data.status.completed && !this.resultShown && !this.stopRecreate) {
+      if (this.data.status.completed && !this.resultShown) {
         // this.won = this.data.winner === this.user?.uid;
         this.resultShown = true;
         this.getWon();
@@ -913,7 +643,6 @@ export class PlayGameComponent implements OnInit {
         }
 
         // update current user's win stats (if not guest)
-        // TODO: update stats only once!
         if (!this.user.uid.toString().startsWith("guest-")) {
           let lost = 0;
           if (!this.won && this.data.winner !== "tie") {
@@ -934,9 +663,9 @@ export class PlayGameComponent implements OnInit {
         }
       }
 
-      // // get game's creation date
-      //   this.data.created = new Date(this.data.created.seconds * 1000);
-      //   this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes";    
+      // get game's creation date
+        this.data.created = new Date(this.data.created.seconds * 1000);
+        this.createdDelta = (Math.ceil((new Date().getTime() - this.data.created.getTime())/1000/60)).toString() + " minutes"; // TODO: better time format    
 
       // decide on turn, get legal moves
       if (this.data && !this.data.status.completed) {
@@ -974,23 +703,75 @@ export class PlayGameComponent implements OnInit {
           }
         }
       }
-      else { 
-        // game is over, set all moves to illegal
+      else { // game is over, set all moves to illegal
         for (let i = 0; i < this.board.length; i++) {
           for (let j = 0; j < this.board[i].length; j++) {
             this.legalMove[i][j] = false;
           }
         }
-
-        if (this.data.moves[this.data.moves.length-1].x === -3 && this.data.moves[this.data.moves.length-1].y === -3) {
-          console.log('last move was a time-out');
-          this.playerTurn = this.data.moves[this.data.moves.length-1].color === this.playerColor;
-
-          this.updateTimer(true);
-        }
       }
 
-      // console.log("data: ", this.data);
+      // console.log("data: ", doc.data());
+      this.timesLoaded++;
     });
   }
+
+  ngOnDestroy(): void {
+    if (!this.data) {
+      return;
+    }
+  
+    // delete game if there is only one player left
+    if (this.data.players.length === 1) {
+      deleteDoc(doc(collection(this.db, 'games'), this.gameId));
+    }
+
+    // remove current user from game if it has finished
+    if (this.data.status.completed) {
+      const playerIds = this.data.players.map((player:any) => player.id);
+      this.data.players.splice(playerIds.indexOf(this.user?.uid), 1);
+
+      // update game doc
+      const gamesCollection = collection(this.db, 'games');
+      const gameDoc = doc(gamesCollection, this.gameId);
+
+      updateDoc(gameDoc, { players: this.data.players });
+    }
+  }
+
+  // layout settings
+
+  // board width
+    getBoardWidth() {
+      this.boardWidth = 100;
+
+      if ((window.innerWidth) >= 768) {
+        this.boardWidth = 70;
+      }
+      if ((window.innerWidth) >= 1280) {
+        this.boardWidth = 60;
+      }
+    }
+
+    onDecrBoardWidth() {
+      if (!this.boardWidth) { this.boardWidth=0; this.getBoardWidth(); }
+      if (this.boardWidth < 45) { return }
+
+      this.boardWidth -= 5;
+      this.boardWidthResetShow = true;
+    }
+
+    onIncrBoardWidth() {
+      if (!this.boardWidth) { this.boardWidth=0; this.getBoardWidth(); }
+      if (this.boardWidth > 95) { return }
+
+      this.boardWidth += 5;
+      this.boardWidthResetShow = true;
+    }
+
+    onResetBoardWidth() {
+      this.boardWidth = undefined;
+      this.boardWidthResetShow = false;
+    }
+
 }
