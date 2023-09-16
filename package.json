@@ -26,6 +26,7 @@
     "nanoid": "^4.0.0",
     "ngx-clipboard": "^15.1.0",
     "ngx-toastr": "^15.0.0",
+    "rxfire": "^6.0.4",
     "rxjs": "~7.5.0",
     "sweetalert2": "^11.4.28",
     "tslib": "^2.3.0",
