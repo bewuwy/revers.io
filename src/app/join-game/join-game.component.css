@@ -16,7 +16,7 @@ button {
 }
 
     .refresh svg {
-        color: #0e86e9;
+        color: var(--primary);
     }
 
     .refresh:disabled, .refresh[disabled=true] {
@@ -172,12 +172,12 @@ h4 {
         padding: .5rem 1rem;
         flex-grow: 1;
         
-        border: 1px solid #0e86e9;
+        border: 1px solid var(--primary);
     }
 
     /* on input checked */
     .rulesPreset input:checked + label {
-        background-color: #2196F3;
+        background-color: var(--primary);
         color: white;
     }
 
@@ -191,7 +191,7 @@ h4 {
         align-items: center;
         justify-content: center;
         
-        border: 1px solid #0e86e9;
+        border: 1px solid var(--primary);
     }
 
     @media(min-width: 768px) {

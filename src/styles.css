@@ -3,6 +3,16 @@
     src: url(/assets/font/Roboto-Light.ttf);
 }
 
+:root {
+    --bg: #393939;
+    --primary: #829277;
+    --secondary: #B1BBAA;
+    --accent: #D1AB3F;
+    --yes: #429b45;
+    --no: #940606;
+    --warning: #db7d18;
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -12,6 +22,9 @@ body {
 
     margin: auto;
     width: 80vw;
+
+    background-color: var(--bg);
+    color: white;
 }
 
 @media (min-width: 1024px) {
@@ -61,7 +74,7 @@ form {
     }
 
 a {
-    color: #0e86e9;
+    color: var(--primary);
 }
 
 p.has-svg {
@@ -77,9 +90,13 @@ svg {
     color: black;
 }
 
+button:hover, input[type="submit"]:hover {
+    filter: brightness(85%);
+}
+
 button, input[type="submit"] {
     /* button css */
-    background-color: #0e86e9;
+    background-color: var(--primary);
     color: #fff;
     padding: 12px 14px;
     /* padding: 6px 8px; */
@@ -155,11 +172,11 @@ button, input[type="submit"] {
     }
     
     input:checked + .slider {
-        background-color: #2196F3;
+        background-color: var(--primary);
     }
     
     input:focus + .slider {
-        box-shadow: 0 0 1px #2196F3;
+        box-shadow: 0 0 1px var(--primary);
     }
     
     input:checked + .slider:before {

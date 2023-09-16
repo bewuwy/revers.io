@@ -27,17 +27,9 @@
 }
 
 #accept {
-    background-color: #4CAF50;    
+    background-color: var(--yes);    
 }
 
 #decline {
-    background-color: #f44336;
-}
-
-#accept:hover {
-    background-color: #3e8e41;
-}
-
-#decline:hover {
-    background-color: #da4336;
+    background-color: var(--no);
 }

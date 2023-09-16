@@ -59,7 +59,6 @@
             <div id="timer-input">
                 <div class="switch-container">
                     <label for="timerEnable" *ngIf="openGame">Timer on</label>
-                    <label for="timerEnable" *ngIf="!openGame">Timer of</label>
                     
                     <label class="switch">
                         <input type="checkbox" id="timerEnable" (change)="timerEnabled = !timerEnabled" checked />

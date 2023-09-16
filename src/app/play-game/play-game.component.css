@@ -1,13 +1,8 @@
 :root {
-    --white: #fff;
-    --black: #000;
+    --white: #f6f6d2;
+    --black: #161008;
+    --board-color: #83a085;
 }
-
-/* @media (prefers-color-scheme: dark) {
-    :root {
-        --white: #f6f6d2;
-    }
-} */
 
 #play {
     margin-top: 2rem;
@@ -173,7 +168,7 @@ body {
         aspect-ratio: 1/1;
 
         border: 1px solid white;
-        background-color: #A2C3A4;
+        background-color: var(--board-color);
         font-size: 30px;
         /* text-align: center;
         vertical-align: middle; */
@@ -186,7 +181,7 @@ body {
     }
 
     #board .legal:hover {
-        background-color: #829c83;
+        filter: brightness(130%);
     }
 
     #board .cell:not(.legal) {
@@ -230,6 +225,14 @@ body {
 
             .player-score.white > svg {
                 fill: var(--white);
+            }
+
+            .player-score.white > span {
+                color: var(--black);
+            }
+
+            .player-score.black > span {
+                color: var(--white);
             }
 
             .player-score.black > svg {
@@ -297,7 +300,7 @@ body {
     }
 
     #game-info > div {
-        background-color: #0e86e9;
+        /* background-color: var(--primary); */
         color: white;
 
         border: none;
@@ -343,7 +346,7 @@ body {
         }
 
         #rematch.jumping {
-            background-color: #FF931F;
+            background-color: var(--warning);
         }
 
         @media (min-width: 768px) {
@@ -356,7 +359,7 @@ body {
         }
 
         #rematch.sent {
-            background-color: #45B053;
+            background-color: var(--yes);
         }
 
     #timer-enemy {
@@ -365,6 +368,7 @@ body {
     }
 
     #player-names {
+        background-color: var(--primary);
         grid-row: 2;
         grid-column-start: 1;
         grid-column-end: 4;
@@ -442,6 +446,7 @@ body {
     }
 
     #game-controls {
+        background-color: var(--secondary);
         grid-row: 3;
         grid-column-start: 2;
         grid-column-end: 4;
@@ -473,6 +478,7 @@ body {
         gap: 0.5rem;
         align-items: center;
         justify-content: center;
+        background-color: var(--accent);
 
         font-weight: bold;
         font-size: 1.5rem;
@@ -513,7 +519,7 @@ body {
 
     #game-info > .timer.dim {
         /* dim the background */
-        background-color: #174f89;
+        filter: brightness(75%);
         color: #E1D9D1;
         fill: #E1D9D1;
     }

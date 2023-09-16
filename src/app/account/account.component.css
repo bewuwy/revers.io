@@ -20,6 +20,10 @@
         justify-content: center;
     }
 
+        #email > svg {
+            color: white;
+        }
+
 #chart {
     width: 100%;
     height: 25rem;
