@@ -6,12 +6,14 @@ import { JoinGameComponent } from './join-game/join-game.component';
 import { InviteComponent } from './invite/invite.component';
 import { SignInComponent } from './sign-in/sign-in.component';
 import { IndexComponent } from './index/index.component';
+import { CreateComponent } from './create/create.component';
 
 const routes: Routes = [
   { path: '', component: IndexComponent },
   { path: 'account', component: AccountComponent },
   { path: "login", component: SignInComponent },
   { path: 'join', component: JoinGameComponent },
+  { path: 'create', component: CreateComponent },
   { path: "invite/:id", component: InviteComponent },
   { path: 'play/:id', component: PlayGameComponent, pathMatch: 'full' }
 ];

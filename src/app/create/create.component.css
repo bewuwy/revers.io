@@ -1,0 +1,233 @@
+:root {
+    --white: #f6f6d2;
+    --black: #161008;
+    --board-color: #83a085;
+}
+
+body {
+    width: 90vw;
+}
+
+    @media (min-width: 1280px) {
+        body {
+            width: 80vw;
+        }
+    }
+
+    @media (min-width: 1536px) {
+        body {
+            min-width: 65vw;
+        }
+    }
+
+#play {
+    margin-top: 2rem;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    @media (min-width: 768px) {
+        #play {
+            flex-direction: row;
+        }
+    }
+
+#board-container {
+    display: flex;
+    flex-direction: column;
+
+    width: min-content;
+}
+
+#board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    
+    border: 5px solid black;
+    position: relative;
+
+    aspect-ratio: 1/1;
+    width: 100%;
+}
+
+    @media (min-width: 768px) {
+        #board {
+            height: 50vh;
+            width: auto;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        #board {
+            height: 75vh;
+        }
+    }
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: center;
+        
+        width: 100%;
+        height: auto;
+        flex-grow: 1;
+    }
+
+    #board .cell {
+        width: 100%;
+        aspect-ratio: 1/1;
+
+        border: 1px solid white;
+        background-color: var(--board-color);
+        font-size: 30px;
+        /* text-align: center;
+        vertical-align: middle; */
+        line-height: 50px;
+        cursor: pointer;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #game-info {
+        display: grid;
+    
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: 1fr 3fr 1fr;
+        row-gap: .5rem;
+        column-gap: .5rem;
+    
+        width: auto;
+        margin-top: .5rem;
+        margin-bottom: auto;
+        height: 30%;
+    }
+        @media (min-width: 768px) {
+            #game-info {        
+                margin-left: 1.5rem;
+                margin-right: 1.5rem;
+            }
+        }
+    
+        @media (min-width: 1024px) {
+            #game-info {
+                width: 25vw;
+                
+                margin-top: auto;
+    
+                position: relative;
+                top: -3rem;
+            }
+        }
+    
+        @media (min-width: 1280px) {
+            #game-info {
+                margin-left: 4rem;
+            }
+        }
+    
+        #game-info > div, #game-info > button {
+            /* background-color: var(--primary); */
+            color: white;
+    
+            border: none;
+            border-radius: .75rem;    
+        }
+
+#create-rules {
+    background-color: var(--primary);
+    grid-row: 2;
+    grid-column-start: 1;
+    grid-column-end: 4;
+
+    padding: 1.25rem;
+    row-gap: .5rem;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+    #create-rules > button {
+        background-color: var(--secondary);
+        position: relative;
+    }
+
+    #create-rules > button > svg {
+        position: absolute;
+        right: .5rem;
+        bottom: .5rem;
+        display: none;
+    }
+
+    #create-rules > button > svg.show {
+        display: block;
+    }
+
+.disk {
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+
+    font-size: 30px;
+    line-height: 50px;
+
+    /* transitions */
+    transition: all;
+    transition-duration: 0.1s;
+    transition-delay: 0.2s;
+}
+
+    .white {
+        fill: var(--white);
+    }
+
+    .black {
+        fill: var(--black);
+    }
+
+    .flip {
+        animation: flip 1s;
+    }
+
+    @keyframes flip {
+        0% {
+            transform: rotateY(0deg);
+        }
+        100% {
+            transform: rotateY(180deg);
+        }
+    }
+
+.timer {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--accent);
+
+    font-weight: bold;
+    font-size: 1.5rem;
+
+    fill: white;
+    padding: .5rem;
+}
+
+#create-title {
+    grid-column-start: 1;
+    width: max-content;
+    grid-row: 1;
+}
+
+#create-submit {
+    grid-column: 3;
+    grid-row: 3;
+    font-weight: 500;
+}
